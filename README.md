@@ -17,3 +17,4 @@ Generally speaking, here are the cliff notes for use:
    - note that at present the master and slave must be powered up at the same time,  this will be updated eventually to allow hotplugging
  - Look at the sample batch file in the avrdude folder for the proper way to load binaries over i2c
  - Wiring Diagram TBD for how to hook up the board into a Servo
+ - If you're using Arduino, you'll need to add the following board url to the board manager, this will allow you to compile arduino code that can be loaded via the TWI Master/Slave system.

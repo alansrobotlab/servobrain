@@ -1,0 +1,714 @@
+
+TWI_Slave_7_0.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000516  00001800  00001800  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000058a  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000000d8  00800060  00800060  0000058a  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  0000058a  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  000005bc  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000020  00000000  00000000  000005f8  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   000000b0  00000000  00000000  00000618  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000014  00000000  00000000  000006c8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   000000e5  00000000  00000000  000006dc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00001800 <__vectors>:
+    1800:	0e c0       	rjmp	.+28     	; 0x181e <__ctors_end>
+    1802:	1d c0       	rjmp	.+58     	; 0x183e <__bad_interrupt>
+    1804:	1c c0       	rjmp	.+56     	; 0x183e <__bad_interrupt>
+    1806:	1b c0       	rjmp	.+54     	; 0x183e <__bad_interrupt>
+    1808:	1a c0       	rjmp	.+52     	; 0x183e <__bad_interrupt>
+    180a:	19 c0       	rjmp	.+50     	; 0x183e <__bad_interrupt>
+    180c:	18 c0       	rjmp	.+48     	; 0x183e <__bad_interrupt>
+    180e:	17 c0       	rjmp	.+46     	; 0x183e <__bad_interrupt>
+    1810:	16 c0       	rjmp	.+44     	; 0x183e <__bad_interrupt>
+    1812:	15 c0       	rjmp	.+42     	; 0x183e <__bad_interrupt>
+    1814:	14 c0       	rjmp	.+40     	; 0x183e <__bad_interrupt>
+    1816:	13 c0       	rjmp	.+38     	; 0x183e <__bad_interrupt>
+    1818:	12 c0       	rjmp	.+36     	; 0x183e <__bad_interrupt>
+    181a:	11 c0       	rjmp	.+34     	; 0x183e <__bad_interrupt>
+    181c:	10 c0       	rjmp	.+32     	; 0x183e <__bad_interrupt>
+
+0000181e <__ctors_end>:
+    181e:	11 24       	eor	r1, r1
+    1820:	1f be       	out	0x3f, r1	; 63
+    1822:	cf e5       	ldi	r28, 0x5F	; 95
+    1824:	d2 e0       	ldi	r29, 0x02	; 2
+    1826:	de bf       	out	0x3e, r29	; 62
+    1828:	cd bf       	out	0x3d, r28	; 61
+
+0000182a <__do_clear_bss>:
+    182a:	21 e0       	ldi	r18, 0x01	; 1
+    182c:	a0 e6       	ldi	r26, 0x60	; 96
+    182e:	b0 e0       	ldi	r27, 0x00	; 0
+    1830:	01 c0       	rjmp	.+2      	; 0x1834 <.do_clear_bss_start>
+
+00001832 <.do_clear_bss_loop>:
+    1832:	1d 92       	st	X+, r1
+
+00001834 <.do_clear_bss_start>:
+    1834:	a8 33       	cpi	r26, 0x38	; 56
+    1836:	b2 07       	cpc	r27, r18
+    1838:	e1 f7       	brne	.-8      	; 0x1832 <.do_clear_bss_loop>
+    183a:	4e d1       	rcall	.+668    	; 0x1ad8 <main>
+    183c:	6a c2       	rjmp	.+1236   	; 0x1d12 <_exit>
+
+0000183e <__bad_interrupt>:
+    183e:	e0 cf       	rjmp	.-64     	; 0x1800 <__vectors>
+
+00001840 <spm_erase>:
+* To execute Page Erase, set up the address in the Z-pointer, write “00000011” to SPMCSR and execute SPM
+* within four clock cycles after writing SPMCSR. The data in R1 and R0 is ignored. The page address must be written
+* to PCPAGE in the Z-register. Other bits in the Z-pointer will be ignored during this operation
+*/
+spm_erase:
+	MOV		r31, r25		; ZH
+    1840:	f9 2f       	mov	r31, r25
+	MOV		r30, r24		; ZL
+    1842:	e8 2f       	mov	r30, r24
+	LDI		R24, 0x03		; (0b00000011)
+    1844:	83 e0       	ldi	r24, 0x03	; 3
+	RCALL	do_spm
+    1846:	10 d0       	rcall	.+32     	; 0x1868 <do_spm>
+	ret
+    1848:	08 95       	ret
+
+0000184a <spm_filltemp>:
+* to address the data in the temporary buffer. The temporary buffer will auto-erase after a Page Write operation or by
+* writing the CTPB bit in SPMCSR. It is also erased after a system reset. Note that it is not possible to write more
+* than one time to each address without erasing the temporary buffer.
+*/
+spm_filltemp:
+	push	r0					; save R0. R1 always sets to 0.
+    184a:	0f 92       	push	r0
+
+	MOV		r31, r25			; addrH ZH
+    184c:	f9 2f       	mov	r31, r25
+	MOV		r30, r24			; addrL ZL
+    184e:	e8 2f       	mov	r30, r24
+	MOV		r1, r23				; dataH R1
+    1850:	17 2e       	mov	r1, r23
+	MOV		r0, r22				; dataL R0
+    1852:	06 2e       	mov	r0, r22
+	LDI		R24, 0x01			; (0b00000001)
+    1854:	81 e0       	ldi	r24, 0x01	; 1
+	RCALL	do_spm
+    1856:	08 d0       	rcall	.+16     	; 0x1868 <do_spm>
+
+	CLR r1
+    1858:	11 24       	eor	r1, r1
+	pop r0
+    185a:	0f 90       	pop	r0
+	ret
+    185c:	08 95       	ret
+
+0000185e <spm_pagewrite>:
+ * four clock cycles after writing SPMCSR. The data in R1 and R0 is ignored. The page address must be written to
+ * PCPAGE. Other bits in the Z-pointer must be written to zero during this operation
+ * void spm_pagewrite(uint16_t pageAdrs)
+ */
+spm_pagewrite:
+	MOV		r31, r25			; pageAdrsH ZH
+    185e:	f9 2f       	mov	r31, r25
+	MOV		r30, r24			; pageArdsL	ZL
+    1860:	e8 2f       	mov	r30, r24
+	LDI		R24, 0x05			; (0b00000101)
+    1862:	85 e0       	ldi	r24, 0x05	; 5
+	RCALL	do_spm
+    1864:	01 d0       	rcall	.+2      	; 0x1868 <do_spm>
+	ret
+    1866:	08 95       	ret
+
+00001868 <do_spm>:
+/* ref: AVR_8bit_Instruction_Set pg 141
+ * void do_spm(uint8_t data)
+ */
+do_spm:
+	; Save SREG
+	lds		r18, SREG
+    1868:	20 91 5f 00 	lds	r18, 0x005F	; 0x80005f <__EEPROM_REGION_LENGTH__+0x7f005f>
+	CLI
+    186c:	f8 94       	cli
+
+0000186e <wait>:
+
+;	while(SPMCSR & (1<<SPMEN));		// wait
+;check for previous SPM complete
+wait:
+	LDS		r19, SPMCSR
+    186e:	30 91 57 00 	lds	r19, 0x0057	; 0x800057 <__EEPROM_REGION_LENGTH__+0x7f0057>
+	sbrc	r19, SPMEN
+    1872:	30 fd       	sbrc	r19, 0
+	rjmp	wait
+    1874:	fc cf       	rjmp	.-8      	; 0x186e <wait>
+
+	STS		SPMCSR, r24			; data
+    1876:	80 93 57 00 	sts	0x0057, r24	; 0x800057 <__EEPROM_REGION_LENGTH__+0x7f0057>
+	SPM
+    187a:	e8 95       	spm
+
+	STS		SREG, r18
+    187c:	20 93 5f 00 	sts	0x005F, r18	; 0x80005f <__EEPROM_REGION_LENGTH__+0x7f005f>
+	ret
+    1880:	08 95       	ret
+
+00001882 <waitBootTimeOut>:
+    1882:	08 b6       	in	r0, 0x38	; 56
+    1884:	02 fc       	sbrc	r0, 2
+    1886:	02 c0       	rjmp	.+4      	; 0x188c <waitBootTimeOut+0xa>
+    1888:	81 e0       	ldi	r24, 0x01	; 1
+    188a:	08 95       	ret
+    188c:	88 b7       	in	r24, 0x38	; 56
+    188e:	84 60       	ori	r24, 0x04	; 4
+    1890:	88 bf       	out	0x38, r24	; 56
+    1892:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
+    1896:	81 50       	subi	r24, 0x01	; 1
+    1898:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+    189c:	81 11       	cpse	r24, r1
+    189e:	f4 cf       	rjmp	.-24     	; 0x1888 <waitBootTimeOut+0x6>
+    18a0:	10 be       	out	0x30, r1	; 48
+    18a2:	08 95       	ret
+
+000018a4 <resetBootReset>:
+    18a4:	cf 93       	push	r28
+    18a6:	df 93       	push	r29
+    18a8:	6f ef       	ldi	r22, 0xFF	; 255
+    18aa:	7b ec       	ldi	r23, 0xCB	; 203
+    18ac:	80 e0       	ldi	r24, 0x00	; 0
+    18ae:	90 e0       	ldi	r25, 0x00	; 0
+    18b0:	cc df       	rcall	.-104    	; 0x184a <spm_filltemp>
+    18b2:	c2 e0       	ldi	r28, 0x02	; 2
+    18b4:	d0 e0       	ldi	r29, 0x00	; 0
+    18b6:	fe 01       	movw	r30, r28
+    18b8:	65 91       	lpm	r22, Z+
+    18ba:	74 91       	lpm	r23, Z
+    18bc:	ce 01       	movw	r24, r28
+    18be:	c5 df       	rcall	.-118    	; 0x184a <spm_filltemp>
+    18c0:	22 96       	adiw	r28, 0x02	; 2
+    18c2:	c0 34       	cpi	r28, 0x40	; 64
+    18c4:	d1 05       	cpc	r29, r1
+    18c6:	b9 f7       	brne	.-18     	; 0x18b6 <resetBootReset+0x12>
+    18c8:	07 b6       	in	r0, 0x37	; 55
+    18ca:	00 fc       	sbrc	r0, 0
+    18cc:	fd cf       	rjmp	.-6      	; 0x18c8 <resetBootReset+0x24>
+    18ce:	80 e0       	ldi	r24, 0x00	; 0
+    18d0:	90 e0       	ldi	r25, 0x00	; 0
+    18d2:	c5 df       	rcall	.-118    	; 0x185e <spm_pagewrite>
+    18d4:	07 b6       	in	r0, 0x37	; 55
+    18d6:	00 fc       	sbrc	r0, 0
+    18d8:	fd cf       	rjmp	.-6      	; 0x18d4 <resetBootReset+0x30>
+    18da:	df 91       	pop	r29
+    18dc:	cf 91       	pop	r28
+    18de:	08 95       	ret
+
+000018e0 <Erase_One_Page>:
+    18e0:	af df       	rcall	.-162    	; 0x1840 <spm_erase>
+    18e2:	07 b6       	in	r0, 0x37	; 55
+    18e4:	00 fc       	sbrc	r0, 0
+    18e6:	fd cf       	rjmp	.-6      	; 0x18e2 <Erase_One_Page+0x2>
+    18e8:	08 95       	ret
+
+000018ea <UpdatePage>:
+    18ea:	ef 92       	push	r14
+    18ec:	ff 92       	push	r15
+    18ee:	0f 93       	push	r16
+    18f0:	1f 93       	push	r17
+    18f2:	cf 93       	push	r28
+    18f4:	df 93       	push	r29
+    18f6:	ec 01       	movw	r28, r24
+    18f8:	c0 7c       	andi	r28, 0xC0	; 192
+    18fa:	20 97       	sbiw	r28, 0x00	; 0
+    18fc:	91 f4       	brne	.+36     	; 0x1922 <UpdatePage+0x38>
+    18fe:	80 91 68 00 	lds	r24, 0x0068	; 0x800068 <pageBuffer>
+    1902:	80 93 65 00 	sts	0x0065, r24	; 0x800065 <appResetBytes>
+    1906:	80 91 69 00 	lds	r24, 0x0069	; 0x800069 <pageBuffer+0x1>
+    190a:	80 93 66 00 	sts	0x0066, r24	; 0x800066 <appResetBytes+0x1>
+    190e:	fe 01       	movw	r30, r28
+    1910:	84 91       	lpm	r24, Z
+    1912:	80 93 68 00 	sts	0x0068, r24	; 0x800068 <pageBuffer>
+    1916:	e1 e0       	ldi	r30, 0x01	; 1
+    1918:	f0 e0       	ldi	r31, 0x00	; 0
+    191a:	e4 91       	lpm	r30, Z
+    191c:	e0 93 69 00 	sts	0x0069, r30	; 0x800069 <pageBuffer+0x1>
+    1920:	04 c0       	rjmp	.+8      	; 0x192a <UpdatePage+0x40>
+    1922:	c1 15       	cp	r28, r1
+    1924:	f8 e1       	ldi	r31, 0x18	; 24
+    1926:	df 07       	cpc	r29, r31
+    1928:	d0 f4       	brcc	.+52     	; 0x195e <UpdatePage+0x74>
+    192a:	ce 01       	movw	r24, r28
+    192c:	d9 df       	rcall	.-78     	; 0x18e0 <Erase_One_Page>
+    192e:	08 e6       	ldi	r16, 0x68	; 104
+    1930:	10 e0       	ldi	r17, 0x00	; 0
+    1932:	ce 01       	movw	r24, r28
+    1934:	88 56       	subi	r24, 0x68	; 104
+    1936:	90 40       	sbci	r25, 0x00	; 0
+    1938:	7c 01       	movw	r14, r24
+    193a:	f8 01       	movw	r30, r16
+    193c:	60 81       	ld	r22, Z
+    193e:	71 81       	ldd	r23, Z+1	; 0x01
+    1940:	c8 01       	movw	r24, r16
+    1942:	8e 0d       	add	r24, r14
+    1944:	9f 1d       	adc	r25, r15
+    1946:	81 df       	rcall	.-254    	; 0x184a <spm_filltemp>
+    1948:	0e 5f       	subi	r16, 0xFE	; 254
+    194a:	1f 4f       	sbci	r17, 0xFF	; 255
+    194c:	f0 e0       	ldi	r31, 0x00	; 0
+    194e:	08 3a       	cpi	r16, 0xA8	; 168
+    1950:	1f 07       	cpc	r17, r31
+    1952:	99 f7       	brne	.-26     	; 0x193a <UpdatePage+0x50>
+    1954:	ce 01       	movw	r24, r28
+    1956:	83 df       	rcall	.-250    	; 0x185e <spm_pagewrite>
+    1958:	07 b6       	in	r0, 0x37	; 55
+    195a:	00 fc       	sbrc	r0, 0
+    195c:	fd cf       	rjmp	.-6      	; 0x1958 <UpdatePage+0x6e>
+    195e:	df 91       	pop	r29
+    1960:	cf 91       	pop	r28
+    1962:	1f 91       	pop	r17
+    1964:	0f 91       	pop	r16
+    1966:	ff 90       	pop	r15
+    1968:	ef 90       	pop	r14
+    196a:	08 95       	ret
+
+0000196c <commandProcess>:
+    196c:	cf 93       	push	r28
+    196e:	df 93       	push	r29
+    1970:	90 91 63 00 	lds	r25, 0x0063	; 0x800063 <commandMode>
+    1974:	92 30       	cpi	r25, 0x02	; 2
+    1976:	e9 f1       	breq	.+122    	; 0x19f2 <commandProcess+0x86>
+    1978:	60 f4       	brcc	.+24     	; 0x1992 <commandProcess+0x26>
+    197a:	99 23       	and	r25, r25
+    197c:	91 f0       	breq	.+36     	; 0x19a2 <commandProcess+0x36>
+    197e:	91 30       	cpi	r25, 0x01	; 1
+    1980:	09 f0       	breq	.+2      	; 0x1984 <commandProcess+0x18>
+    1982:	a5 c0       	rjmp	.+330    	; 0x1ace <commandProcess+0x162>
+    1984:	90 e0       	ldi	r25, 0x00	; 0
+    1986:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    198a:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    198e:	82 e0       	ldi	r24, 0x02	; 2
+    1990:	27 c0       	rjmp	.+78     	; 0x19e0 <commandProcess+0x74>
+    1992:	94 30       	cpi	r25, 0x04	; 4
+    1994:	d9 f1       	breq	.+118    	; 0x1a0c <commandProcess+0xa0>
+    1996:	08 f4       	brcc	.+2      	; 0x199a <commandProcess+0x2e>
+    1998:	3f c0       	rjmp	.+126    	; 0x1a18 <commandProcess+0xac>
+    199a:	95 30       	cpi	r25, 0x05	; 5
+    199c:	09 f4       	brne	.+2      	; 0x19a0 <commandProcess+0x34>
+    199e:	51 c0       	rjmp	.+162    	; 0x1a42 <commandProcess+0xd6>
+    19a0:	96 c0       	rjmp	.+300    	; 0x1ace <commandProcess+0x162>
+    19a2:	82 30       	cpi	r24, 0x02	; 2
+    19a4:	e1 f0       	breq	.+56     	; 0x19de <commandProcess+0x72>
+    19a6:	28 f4       	brcc	.+10     	; 0x19b2 <commandProcess+0x46>
+    19a8:	88 23       	and	r24, r24
+    19aa:	a1 f0       	breq	.+40     	; 0x19d4 <commandProcess+0x68>
+    19ac:	81 30       	cpi	r24, 0x01	; 1
+    19ae:	c1 f0       	breq	.+48     	; 0x19e0 <commandProcess+0x74>
+    19b0:	90 c0       	rjmp	.+288    	; 0x1ad2 <commandProcess+0x166>
+    19b2:	83 30       	cpi	r24, 0x03	; 3
+    19b4:	c1 f0       	breq	.+48     	; 0x19e6 <commandProcess+0x7a>
+    19b6:	84 30       	cpi	r24, 0x04	; 4
+    19b8:	09 f0       	breq	.+2      	; 0x19bc <commandProcess+0x50>
+    19ba:	8b c0       	rjmp	.+278    	; 0x1ad2 <commandProcess+0x166>
+    19bc:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+    19c0:	f7 d0       	rcall	.+494    	; 0x1bb0 <clearTxFifo>
+    19c2:	8e e1       	ldi	r24, 0x1E	; 30
+    19c4:	2a d1       	rcall	.+596    	; 0x1c1a <putTxFifo>
+    19c6:	83 e9       	ldi	r24, 0x93	; 147
+    19c8:	28 d1       	rcall	.+592    	; 0x1c1a <putTxFifo>
+    19ca:	8b e0       	ldi	r24, 0x0B	; 11
+    19cc:	26 d1       	rcall	.+588    	; 0x1c1a <putTxFifo>
+    19ce:	df 91       	pop	r29
+    19d0:	cf 91       	pop	r28
+    19d2:	e9 c0       	rjmp	.+466    	; 0x1ba6 <clearRxFifo>
+    19d4:	80 91 a8 00 	lds	r24, 0x00A8	; 0x8000a8 <systemStatus>
+    19d8:	df 91       	pop	r29
+    19da:	cf 91       	pop	r28
+    19dc:	1e c1       	rjmp	.+572    	; 0x1c1a <putTxFifo>
+    19de:	84 e0       	ldi	r24, 0x04	; 4
+    19e0:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+    19e4:	76 c0       	rjmp	.+236    	; 0x1ad2 <commandProcess+0x166>
+    19e6:	85 e0       	ldi	r24, 0x05	; 5
+    19e8:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+    19ec:	df 91       	pop	r29
+    19ee:	cf 91       	pop	r28
+    19f0:	df c0       	rjmp	.+446    	; 0x1bb0 <clearTxFifo>
+    19f2:	20 e0       	ldi	r18, 0x00	; 0
+    19f4:	30 e0       	ldi	r19, 0x00	; 0
+    19f6:	30 91 61 00 	lds	r19, 0x0061	; 0x800061 <workingAdrs>
+    19fa:	28 0f       	add	r18, r24
+    19fc:	31 1d       	adc	r19, r1
+    19fe:	22 0f       	add	r18, r18
+    1a00:	33 1f       	adc	r19, r19
+    1a02:	30 93 62 00 	sts	0x0062, r19	; 0x800062 <workingAdrs+0x1>
+    1a06:	20 93 61 00 	sts	0x0061, r18	; 0x800061 <workingAdrs>
+    1a0a:	61 c0       	rjmp	.+194    	; 0x1ace <commandProcess+0x162>
+    1a0c:	80 93 67 00 	sts	0x0067, r24	; 0x800067 <dataCount>
+    1a10:	10 92 64 00 	sts	0x0064, r1	; 0x800064 <dataIndex>
+    1a14:	83 e0       	ldi	r24, 0x03	; 3
+    1a16:	e4 cf       	rjmp	.-56     	; 0x19e0 <commandProcess+0x74>
+    1a18:	90 91 64 00 	lds	r25, 0x0064	; 0x800064 <dataIndex>
+    1a1c:	e9 2f       	mov	r30, r25
+    1a1e:	f0 e0       	ldi	r31, 0x00	; 0
+    1a20:	e8 59       	subi	r30, 0x98	; 152
+    1a22:	ff 4f       	sbci	r31, 0xFF	; 255
+    1a24:	80 83       	st	Z, r24
+    1a26:	81 e0       	ldi	r24, 0x01	; 1
+    1a28:	89 0f       	add	r24, r25
+    1a2a:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <dataIndex>
+    1a2e:	90 91 67 00 	lds	r25, 0x0067	; 0x800067 <dataCount>
+    1a32:	89 13       	cpse	r24, r25
+    1a34:	4e c0       	rjmp	.+156    	; 0x1ad2 <commandProcess+0x166>
+    1a36:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <workingAdrs>
+    1a3a:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a3e:	55 df       	rcall	.-342    	; 0x18ea <UpdatePage>
+    1a40:	46 c0       	rjmp	.+140    	; 0x1ace <commandProcess+0x162>
+    1a42:	80 93 67 00 	sts	0x0067, r24	; 0x800067 <dataCount>
+    1a46:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+    1a4a:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <workingAdrs>
+    1a4e:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a52:	89 2b       	or	r24, r25
+    1a54:	19 f0       	breq	.+6      	; 0x1a5c <commandProcess+0xf0>
+    1a56:	c0 e0       	ldi	r28, 0x00	; 0
+    1a58:	d0 e0       	ldi	r29, 0x00	; 0
+    1a5a:	25 c0       	rjmp	.+74     	; 0x1aa6 <commandProcess+0x13a>
+    1a5c:	80 91 65 00 	lds	r24, 0x0065	; 0x800065 <appResetBytes>
+    1a60:	dc d0       	rcall	.+440    	; 0x1c1a <putTxFifo>
+    1a62:	80 91 66 00 	lds	r24, 0x0066	; 0x800066 <appResetBytes+0x1>
+    1a66:	d9 d0       	rcall	.+434    	; 0x1c1a <putTxFifo>
+    1a68:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <workingAdrs>
+    1a6c:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a70:	02 96       	adiw	r24, 0x02	; 2
+    1a72:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1a76:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    1a7a:	c2 e0       	ldi	r28, 0x02	; 2
+    1a7c:	d0 e0       	ldi	r29, 0x00	; 0
+    1a7e:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <dataCount>
+    1a82:	90 e0       	ldi	r25, 0x00	; 0
+    1a84:	c8 17       	cp	r28, r24
+    1a86:	d9 07       	cpc	r29, r25
+    1a88:	24 f5       	brge	.+72     	; 0x1ad2 <commandProcess+0x166>
+    1a8a:	e0 91 61 00 	lds	r30, 0x0061	; 0x800061 <workingAdrs>
+    1a8e:	f0 91 62 00 	lds	r31, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a92:	cf 01       	movw	r24, r30
+    1a94:	01 96       	adiw	r24, 0x01	; 1
+    1a96:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1a9a:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    1a9e:	84 91       	lpm	r24, Z
+    1aa0:	bc d0       	rcall	.+376    	; 0x1c1a <putTxFifo>
+    1aa2:	21 96       	adiw	r28, 0x01	; 1
+    1aa4:	ec cf       	rjmp	.-40     	; 0x1a7e <commandProcess+0x112>
+    1aa6:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <dataCount>
+    1aaa:	90 e0       	ldi	r25, 0x00	; 0
+    1aac:	c8 17       	cp	r28, r24
+    1aae:	d9 07       	cpc	r29, r25
+    1ab0:	84 f4       	brge	.+32     	; 0x1ad2 <commandProcess+0x166>
+    1ab2:	e0 91 61 00 	lds	r30, 0x0061	; 0x800061 <workingAdrs>
+    1ab6:	f0 91 62 00 	lds	r31, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1aba:	cf 01       	movw	r24, r30
+    1abc:	01 96       	adiw	r24, 0x01	; 1
+    1abe:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1ac2:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    1ac6:	84 91       	lpm	r24, Z
+    1ac8:	a8 d0       	rcall	.+336    	; 0x1c1a <putTxFifo>
+    1aca:	21 96       	adiw	r28, 0x01	; 1
+    1acc:	ec cf       	rjmp	.-40     	; 0x1aa6 <commandProcess+0x13a>
+    1ace:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+    1ad2:	df 91       	pop	r29
+    1ad4:	cf 91       	pop	r28
+    1ad6:	08 95       	ret
+
+00001ad8 <main>:
+    1ad8:	2d d0       	rcall	.+90     	; 0x1b34 <mod_led_init>
+    1ada:	2e d0       	rcall	.+92     	; 0x1b38 <mod_led_on>
+    1adc:	10 92 a8 00 	sts	0x00A8, r1	; 0x8000a8 <systemStatus>
+    1ae0:	e1 de       	rcall	.-574    	; 0x18a4 <resetBootReset>
+    1ae2:	88 e5       	ldi	r24, 0x58	; 88
+    1ae4:	40 d0       	rcall	.+128    	; 0x1b66 <uts_init>
+    1ae6:	8f e0       	ldi	r24, 0x0F	; 15
+    1ae8:	80 bf       	out	0x30, r24	; 48
+    1aea:	88 e2       	ldi	r24, 0x28	; 40
+    1aec:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+    1af0:	80 e0       	ldi	r24, 0x00	; 0
+    1af2:	93 d0       	rcall	.+294    	; 0x1c1a <putTxFifo>
+    1af4:	c6 de       	rcall	.-628    	; 0x1882 <waitBootTimeOut>
+    1af6:	88 23       	and	r24, r24
+    1af8:	41 f0       	breq	.+16     	; 0x1b0a <main+0x32>
+    1afa:	af d0       	rcall	.+350    	; 0x1c5a <uts_poll>
+    1afc:	5e d0       	rcall	.+188    	; 0x1bba <isRxEmpty>
+    1afe:	88 23       	and	r24, r24
+    1b00:	79 f0       	breq	.+30     	; 0x1b20 <main+0x48>
+    1b02:	63 d0       	rcall	.+198    	; 0x1bca <isTxEmpty>
+    1b04:	88 23       	and	r24, r24
+    1b06:	b1 f3       	breq	.-20     	; 0x1af4 <main+0x1c>
+    1b08:	0b c0       	rjmp	.+22     	; 0x1b20 <main+0x48>
+    1b0a:	cf e0       	ldi	r28, 0x0F	; 15
+    1b0c:	d0 e0       	ldi	r29, 0x00	; 0
+    1b0e:	fe 01       	movw	r30, r28
+    1b10:	84 91       	lpm	r24, Z
+    1b12:	8f 3f       	cpi	r24, 0xFF	; 255
+    1b14:	29 f0       	breq	.+10     	; 0x1b20 <main+0x48>
+    1b16:	83 e0       	ldi	r24, 0x03	; 3
+    1b18:	13 d0       	rcall	.+38     	; 0x1b40 <mod_led_toggle>
+    1b1a:	c4 de       	rcall	.-632    	; 0x18a4 <resetBootReset>
+    1b1c:	fe 01       	movw	r30, r28
+    1b1e:	09 95       	icall
+    1b20:	0d d0       	rcall	.+26     	; 0x1b3c <mod_led_off>
+    1b22:	85 e0       	ldi	r24, 0x05	; 5
+    1b24:	0d d0       	rcall	.+26     	; 0x1b40 <mod_led_toggle>
+    1b26:	99 d0       	rcall	.+306    	; 0x1c5a <uts_poll>
+    1b28:	48 d0       	rcall	.+144    	; 0x1bba <isRxEmpty>
+    1b2a:	81 11       	cpse	r24, r1
+    1b2c:	fc cf       	rjmp	.-8      	; 0x1b26 <main+0x4e>
+    1b2e:	55 d0       	rcall	.+170    	; 0x1bda <getRxFifo>
+    1b30:	1d df       	rcall	.-454    	; 0x196c <commandProcess>
+    1b32:	f9 cf       	rjmp	.-14     	; 0x1b26 <main+0x4e>
+
+00001b34 <mod_led_init>:
+    1b34:	b9 9a       	sbi	0x17, 1	; 23
+    1b36:	08 95       	ret
+
+00001b38 <mod_led_on>:
+    1b38:	c1 9a       	sbi	0x18, 1	; 24
+    1b3a:	08 95       	ret
+
+00001b3c <mod_led_off>:
+    1b3c:	c1 98       	cbi	0x18, 1	; 24
+    1b3e:	08 95       	ret
+
+00001b40 <mod_led_toggle>:
+    1b40:	cf 93       	push	r28
+    1b42:	df 93       	push	r29
+    1b44:	d8 2f       	mov	r29, r24
+    1b46:	c0 e0       	ldi	r28, 0x00	; 0
+    1b48:	cd 17       	cp	r28, r29
+    1b4a:	51 f0       	breq	.+20     	; 0x1b60 <mod_led_toggle+0x20>
+    1b4c:	f5 df       	rcall	.-22     	; 0x1b38 <mod_led_on>
+    1b4e:	00 00       	nop
+    1b50:	00 00       	nop
+    1b52:	00 00       	nop
+    1b54:	f3 df       	rcall	.-26     	; 0x1b3c <mod_led_off>
+    1b56:	00 00       	nop
+    1b58:	00 00       	nop
+    1b5a:	00 00       	nop
+    1b5c:	cf 5f       	subi	r28, 0xFF	; 255
+    1b5e:	f4 cf       	rjmp	.-24     	; 0x1b48 <mod_led_toggle+0x8>
+    1b60:	df 91       	pop	r29
+    1b62:	cf 91       	pop	r28
+    1b64:	08 95       	ret
+
+00001b66 <uts_init>:
+    1b66:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+    1b6a:	80 93 f3 00 	sts	0x00F3, r24	; 0x8000f3 <utsSlaveAdrs>
+    1b6e:	81 e0       	ldi	r24, 0x01	; 1
+    1b70:	80 93 f1 00 	sts	0x00F1, r24	; 0x8000f1 <utsSend>
+    1b74:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+    1b78:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1b7c:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+    1b80:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+    1b84:	b8 98       	cbi	0x17, 0	; 23
+    1b86:	ba 9a       	sbi	0x17, 2	; 23
+    1b88:	80 ee       	ldi	r24, 0xE0	; 224
+    1b8a:	8e b9       	out	0x0e, r24	; 14
+    1b8c:	88 ea       	ldi	r24, 0xA8	; 168
+    1b8e:	8d b9       	out	0x0d, r24	; 13
+    1b90:	08 95       	ret
+
+00001b92 <uts_sendACK>:
+    1b92:	1f b8       	out	0x0f, r1	; 15
+    1b94:	b8 9a       	sbi	0x17, 0	; 23
+    1b96:	8e e0       	ldi	r24, 0x0E	; 14
+    1b98:	8e b9       	out	0x0e, r24	; 14
+    1b9a:	08 95       	ret
+
+00001b9c <uts_chkACK>:
+    1b9c:	b8 98       	cbi	0x17, 0	; 23
+    1b9e:	1f b8       	out	0x0f, r1	; 15
+    1ba0:	8e e0       	ldi	r24, 0x0E	; 14
+    1ba2:	8e b9       	out	0x0e, r24	; 14
+    1ba4:	08 95       	ret
+
+00001ba6 <clearRxFifo>:
+    1ba6:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+    1baa:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1bae:	08 95       	ret
+
+00001bb0 <clearTxFifo>:
+    1bb0:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+    1bb4:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+    1bb8:	08 95       	ret
+
+00001bba <isRxEmpty>:
+    1bba:	81 e0       	ldi	r24, 0x01	; 1
+    1bbc:	20 91 ee 00 	lds	r18, 0x00EE	; 0x8000ee <utsRxHead>
+    1bc0:	90 91 f0 00 	lds	r25, 0x00F0	; 0x8000f0 <utsRxTail>
+    1bc4:	29 13       	cpse	r18, r25
+    1bc6:	80 e0       	ldi	r24, 0x00	; 0
+    1bc8:	08 95       	ret
+
+00001bca <isTxEmpty>:
+    1bca:	81 e0       	ldi	r24, 0x01	; 1
+    1bcc:	20 91 a9 00 	lds	r18, 0x00A9	; 0x8000a9 <utsTxHead>
+    1bd0:	90 91 f2 00 	lds	r25, 0x00F2	; 0x8000f2 <utsTxTail>
+    1bd4:	29 13       	cpse	r18, r25
+    1bd6:	80 e0       	ldi	r24, 0x00	; 0
+    1bd8:	08 95       	ret
+
+00001bda <getRxFifo>:
+    1bda:	90 91 f0 00 	lds	r25, 0x00F0	; 0x8000f0 <utsRxTail>
+    1bde:	e9 2f       	mov	r30, r25
+    1be0:	f0 e0       	ldi	r31, 0x00	; 0
+    1be2:	e6 55       	subi	r30, 0x56	; 86
+    1be4:	ff 4f       	sbci	r31, 0xFF	; 255
+    1be6:	80 81       	ld	r24, Z
+    1be8:	9f 5f       	subi	r25, 0xFF	; 255
+    1bea:	94 34       	cpi	r25, 0x44	; 68
+    1bec:	18 f4       	brcc	.+6      	; 0x1bf4 <getRxFifo+0x1a>
+    1bee:	90 93 f0 00 	sts	0x00F0, r25	; 0x8000f0 <utsRxTail>
+    1bf2:	08 95       	ret
+    1bf4:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+    1bf8:	08 95       	ret
+
+00001bfa <putRxFifo>:
+    1bfa:	90 91 ee 00 	lds	r25, 0x00EE	; 0x8000ee <utsRxHead>
+    1bfe:	e9 2f       	mov	r30, r25
+    1c00:	f0 e0       	ldi	r31, 0x00	; 0
+    1c02:	e6 55       	subi	r30, 0x56	; 86
+    1c04:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c06:	80 83       	st	Z, r24
+    1c08:	9f 5f       	subi	r25, 0xFF	; 255
+    1c0a:	94 34       	cpi	r25, 0x44	; 68
+    1c0c:	18 f4       	brcc	.+6      	; 0x1c14 <putRxFifo+0x1a>
+    1c0e:	90 93 ee 00 	sts	0x00EE, r25	; 0x8000ee <utsRxHead>
+    1c12:	08 95       	ret
+    1c14:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1c18:	08 95       	ret
+
+00001c1a <putTxFifo>:
+    1c1a:	90 91 a9 00 	lds	r25, 0x00A9	; 0x8000a9 <utsTxHead>
+    1c1e:	e9 2f       	mov	r30, r25
+    1c20:	f0 e0       	ldi	r31, 0x00	; 0
+    1c22:	ec 50       	subi	r30, 0x0C	; 12
+    1c24:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c26:	80 83       	st	Z, r24
+    1c28:	9f 5f       	subi	r25, 0xFF	; 255
+    1c2a:	94 34       	cpi	r25, 0x44	; 68
+    1c2c:	18 f4       	brcc	.+6      	; 0x1c34 <putTxFifo+0x1a>
+    1c2e:	90 93 a9 00 	sts	0x00A9, r25	; 0x8000a9 <utsTxHead>
+    1c32:	08 95       	ret
+    1c34:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+    1c38:	08 95       	ret
+
+00001c3a <getTxFifo>:
+    1c3a:	90 91 f2 00 	lds	r25, 0x00F2	; 0x8000f2 <utsTxTail>
+    1c3e:	e9 2f       	mov	r30, r25
+    1c40:	f0 e0       	ldi	r31, 0x00	; 0
+    1c42:	ec 50       	subi	r30, 0x0C	; 12
+    1c44:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c46:	80 81       	ld	r24, Z
+    1c48:	9f 5f       	subi	r25, 0xFF	; 255
+    1c4a:	94 34       	cpi	r25, 0x44	; 68
+    1c4c:	18 f4       	brcc	.+6      	; 0x1c54 <getTxFifo+0x1a>
+    1c4e:	90 93 f2 00 	sts	0x00F2, r25	; 0x8000f2 <utsTxTail>
+    1c52:	08 95       	ret
+    1c54:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+    1c58:	08 95       	ret
+
+00001c5a <uts_poll>:
+    1c5a:	77 9b       	sbis	0x0e, 7	; 14
+    1c5c:	0b c0       	rjmp	.+22     	; 0x1c74 <uts_poll+0x1a>
+    1c5e:	b2 99       	sbic	0x16, 2	; 22
+    1c60:	fe cf       	rjmp	.-4      	; 0x1c5e <uts_poll+0x4>
+    1c62:	b8 98       	cbi	0x17, 0	; 23
+    1c64:	6e 9a       	sbi	0x0d, 6	; 13
+    1c66:	80 e4       	ldi	r24, 0x40	; 64
+    1c68:	8e b9       	out	0x0e, r24	; 14
+    1c6a:	77 9a       	sbi	0x0e, 7	; 14
+    1c6c:	81 e0       	ldi	r24, 0x01	; 1
+    1c6e:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+    1c72:	6c 9a       	sbi	0x0d, 4	; 13
+    1c74:	76 9b       	sbis	0x0e, 6	; 14
+    1c76:	43 c0       	rjmp	.+134    	; 0x1cfe <uts_poll+0xa4>
+    1c78:	80 91 ef 00 	lds	r24, 0x00EF	; 0x8000ef <utsState>
+    1c7c:	83 30       	cpi	r24, 0x03	; 3
+    1c7e:	29 f1       	breq	.+74     	; 0x1cca <uts_poll+0x70>
+    1c80:	28 f4       	brcc	.+10     	; 0x1c8c <uts_poll+0x32>
+    1c82:	81 30       	cpi	r24, 0x01	; 1
+    1c84:	49 f0       	breq	.+18     	; 0x1c98 <uts_poll+0x3e>
+    1c86:	82 30       	cpi	r24, 0x02	; 2
+    1c88:	b9 f0       	breq	.+46     	; 0x1cb8 <uts_poll+0x5e>
+    1c8a:	36 c0       	rjmp	.+108    	; 0x1cf8 <uts_poll+0x9e>
+    1c8c:	85 30       	cpi	r24, 0x05	; 5
+    1c8e:	c9 f0       	breq	.+50     	; 0x1cc2 <uts_poll+0x68>
+    1c90:	08 f1       	brcs	.+66     	; 0x1cd4 <uts_poll+0x7a>
+    1c92:	86 30       	cpi	r24, 0x06	; 6
+    1c94:	11 f1       	breq	.+68     	; 0x1cda <uts_poll+0x80>
+    1c96:	30 c0       	rjmp	.+96     	; 0x1cf8 <uts_poll+0x9e>
+    1c98:	8f b1       	in	r24, 0x0f	; 15
+    1c9a:	86 95       	lsr	r24
+    1c9c:	90 91 f3 00 	lds	r25, 0x00F3	; 0x8000f3 <utsSlaveAdrs>
+    1ca0:	89 13       	cpse	r24, r25
+    1ca2:	07 c0       	rjmp	.+14     	; 0x1cb2 <uts_poll+0x58>
+    1ca4:	8f b1       	in	r24, 0x0f	; 15
+    1ca6:	81 70       	andi	r24, 0x01	; 1
+    1ca8:	80 93 f1 00 	sts	0x00F1, r24	; 0x8000f1 <utsSend>
+    1cac:	72 df       	rcall	.-284    	; 0x1b92 <uts_sendACK>
+    1cae:	82 e0       	ldi	r24, 0x02	; 2
+    1cb0:	1b c0       	rjmp	.+54     	; 0x1ce8 <uts_poll+0x8e>
+    1cb2:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+    1cb6:	1e c0       	rjmp	.+60     	; 0x1cf4 <uts_poll+0x9a>
+    1cb8:	b8 98       	cbi	0x17, 0	; 23
+    1cba:	80 91 f1 00 	lds	r24, 0x00F1	; 0x8000f1 <utsSend>
+    1cbe:	81 11       	cpse	r24, r1
+    1cc0:	0e c0       	rjmp	.+28     	; 0x1cde <uts_poll+0x84>
+    1cc2:	b8 98       	cbi	0x17, 0	; 23
+    1cc4:	1e b8       	out	0x0e, r1	; 14
+    1cc6:	83 e0       	ldi	r24, 0x03	; 3
+    1cc8:	0f c0       	rjmp	.+30     	; 0x1ce8 <uts_poll+0x8e>
+    1cca:	8f b1       	in	r24, 0x0f	; 15
+    1ccc:	96 df       	rcall	.-212    	; 0x1bfa <putRxFifo>
+    1cce:	61 df       	rcall	.-318    	; 0x1b92 <uts_sendACK>
+    1cd0:	85 e0       	ldi	r24, 0x05	; 5
+    1cd2:	0a c0       	rjmp	.+20     	; 0x1ce8 <uts_poll+0x8e>
+    1cd4:	63 df       	rcall	.-314    	; 0x1b9c <uts_chkACK>
+    1cd6:	86 e0       	ldi	r24, 0x06	; 6
+    1cd8:	07 c0       	rjmp	.+14     	; 0x1ce8 <uts_poll+0x8e>
+    1cda:	78 99       	sbic	0x0f, 0	; 15
+    1cdc:	08 c0       	rjmp	.+16     	; 0x1cee <uts_poll+0x94>
+    1cde:	ad df       	rcall	.-166    	; 0x1c3a <getTxFifo>
+    1ce0:	8f b9       	out	0x0f, r24	; 15
+    1ce2:	b8 9a       	sbi	0x17, 0	; 23
+    1ce4:	1e b8       	out	0x0e, r1	; 14
+    1ce6:	84 e0       	ldi	r24, 0x04	; 4
+    1ce8:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+    1cec:	03 c0       	rjmp	.+6      	; 0x1cf4 <uts_poll+0x9a>
+    1cee:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+    1cf2:	6c 98       	cbi	0x0d, 4	; 13
+    1cf4:	76 9a       	sbi	0x0e, 6	; 14
+    1cf6:	03 c0       	rjmp	.+6      	; 0x1cfe <uts_poll+0xa4>
+    1cf8:	80 91 f3 00 	lds	r24, 0x00F3	; 0x8000f3 <utsSlaveAdrs>
+    1cfc:	34 df       	rcall	.-408    	; 0x1b66 <uts_init>
+    1cfe:	75 9b       	sbis	0x0e, 5	; 14
+    1d00:	07 c0       	rjmp	.+14     	; 0x1d10 <uts_poll+0xb6>
+    1d02:	6e 98       	cbi	0x0d, 6	; 13
+    1d04:	80 ee       	ldi	r24, 0xE0	; 224
+    1d06:	8e b9       	out	0x0e, r24	; 14
+    1d08:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+    1d0c:	8d b1       	in	r24, 0x0d	; 13
+    1d0e:	8d b9       	out	0x0d, r24	; 13
+    1d10:	08 95       	ret
+
+00001d12 <_exit>:
+    1d12:	f8 94       	cli
+
+00001d14 <__stop_program>:
+    1d14:	ff cf       	rjmp	.-2      	; 0x1d14 <__stop_program>

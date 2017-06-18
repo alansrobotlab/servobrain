@@ -1,0 +1,1371 @@
+
+TWI_Slave_7_0.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000598  00001800  00001800  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .data         00000000  00800060  00800060  0000060c  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          000000d8  00800060  00800060  0000060c  2**0
+                  ALLOC
+  3 .comment      00000030  00000000  00000000  0000060c  2**0
+                  CONTENTS, READONLY
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000063c  2**2
+                  CONTENTS, READONLY
+  5 .debug_aranges 00000120  00000000  00000000  00000678  2**3
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   00000cae  00000000  00000000  00000798  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000455  00000000  00000000  00001446  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   00000a23  00000000  00000000  0000189b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000001f0  00000000  00000000  000022c0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    00000531  00000000  00000000  000024b0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000604  00000000  00000000  000029e1  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 000000e8  00000000  00000000  00002fe5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00001800 <__vectors>:
+    1800:	0e c0       	rjmp	.+28     	; 0x181e <__ctors_end>
+    1802:	1d c0       	rjmp	.+58     	; 0x183e <__bad_interrupt>
+    1804:	1c c0       	rjmp	.+56     	; 0x183e <__bad_interrupt>
+    1806:	1b c0       	rjmp	.+54     	; 0x183e <__bad_interrupt>
+    1808:	1a c0       	rjmp	.+52     	; 0x183e <__bad_interrupt>
+    180a:	19 c0       	rjmp	.+50     	; 0x183e <__bad_interrupt>
+    180c:	18 c0       	rjmp	.+48     	; 0x183e <__bad_interrupt>
+    180e:	17 c0       	rjmp	.+46     	; 0x183e <__bad_interrupt>
+    1810:	16 c0       	rjmp	.+44     	; 0x183e <__bad_interrupt>
+    1812:	15 c0       	rjmp	.+42     	; 0x183e <__bad_interrupt>
+    1814:	14 c0       	rjmp	.+40     	; 0x183e <__bad_interrupt>
+    1816:	13 c0       	rjmp	.+38     	; 0x183e <__bad_interrupt>
+    1818:	12 c0       	rjmp	.+36     	; 0x183e <__bad_interrupt>
+    181a:	11 c0       	rjmp	.+34     	; 0x183e <__bad_interrupt>
+    181c:	10 c0       	rjmp	.+32     	; 0x183e <__bad_interrupt>
+
+0000181e <__ctors_end>:
+    181e:	11 24       	eor	r1, r1
+    1820:	1f be       	out	0x3f, r1	; 63
+    1822:	cf e5       	ldi	r28, 0x5F	; 95
+    1824:	d2 e0       	ldi	r29, 0x02	; 2
+    1826:	de bf       	out	0x3e, r29	; 62
+    1828:	cd bf       	out	0x3d, r28	; 61
+
+0000182a <__do_clear_bss>:
+    182a:	21 e0       	ldi	r18, 0x01	; 1
+    182c:	a0 e6       	ldi	r26, 0x60	; 96
+    182e:	b0 e0       	ldi	r27, 0x00	; 0
+    1830:	01 c0       	rjmp	.+2      	; 0x1834 <.do_clear_bss_start>
+
+00001832 <.do_clear_bss_loop>:
+    1832:	1d 92       	st	X+, r1
+
+00001834 <.do_clear_bss_start>:
+    1834:	a8 33       	cpi	r26, 0x38	; 56
+    1836:	b2 07       	cpc	r27, r18
+    1838:	e1 f7       	brne	.-8      	; 0x1832 <.do_clear_bss_loop>
+    183a:	65 d1       	rcall	.+714    	; 0x1b06 <main>
+    183c:	ab c2       	rjmp	.+1366   	; 0x1d94 <_exit>
+
+0000183e <__bad_interrupt>:
+    183e:	e0 cf       	rjmp	.-64     	; 0x1800 <__vectors>
+
+00001840 <spm_erase>:
+* To execute Page Erase, set up the address in the Z-pointer, write “00000011” to SPMCSR and execute SPM
+* within four clock cycles after writing SPMCSR. The data in R1 and R0 is ignored. The page address must be written
+* to PCPAGE in the Z-register. Other bits in the Z-pointer will be ignored during this operation
+*/
+spm_erase:
+	MOV		r31, r25		; ZH
+    1840:	f9 2f       	mov	r31, r25
+	MOV		r30, r24		; ZL
+    1842:	e8 2f       	mov	r30, r24
+	LDI		R24, 0x03		; (0b00000011)
+    1844:	83 e0       	ldi	r24, 0x03	; 3
+	RCALL	do_spm
+    1846:	10 d0       	rcall	.+32     	; 0x1868 <do_spm>
+	ret
+    1848:	08 95       	ret
+
+0000184a <spm_filltemp>:
+* to address the data in the temporary buffer. The temporary buffer will auto-erase after a Page Write operation or by
+* writing the CTPB bit in SPMCSR. It is also erased after a system reset. Note that it is not possible to write more
+* than one time to each address without erasing the temporary buffer.
+*/
+spm_filltemp:
+	push	r0					; save R0. R1 always sets to 0.
+    184a:	0f 92       	push	r0
+
+	MOV		r31, r25			; addrH ZH
+    184c:	f9 2f       	mov	r31, r25
+	MOV		r30, r24			; addrL ZL
+    184e:	e8 2f       	mov	r30, r24
+	MOV		r1, r23				; dataH R1
+    1850:	17 2e       	mov	r1, r23
+	MOV		r0, r22				; dataL R0
+    1852:	06 2e       	mov	r0, r22
+	LDI		R24, 0x01			; (0b00000001)
+    1854:	81 e0       	ldi	r24, 0x01	; 1
+	RCALL	do_spm
+    1856:	08 d0       	rcall	.+16     	; 0x1868 <do_spm>
+
+	CLR r1
+    1858:	11 24       	eor	r1, r1
+	pop r0
+    185a:	0f 90       	pop	r0
+	ret
+    185c:	08 95       	ret
+
+0000185e <spm_pagewrite>:
+ * four clock cycles after writing SPMCSR. The data in R1 and R0 is ignored. The page address must be written to
+ * PCPAGE. Other bits in the Z-pointer must be written to zero during this operation
+ * void spm_pagewrite(uint16_t pageAdrs)
+ */
+spm_pagewrite:
+	MOV		r31, r25			; pageAdrsH ZH
+    185e:	f9 2f       	mov	r31, r25
+	MOV		r30, r24			; pageArdsL	ZL
+    1860:	e8 2f       	mov	r30, r24
+	LDI		R24, 0x05			; (0b00000101)
+    1862:	85 e0       	ldi	r24, 0x05	; 5
+	RCALL	do_spm
+    1864:	01 d0       	rcall	.+2      	; 0x1868 <do_spm>
+	ret
+    1866:	08 95       	ret
+
+00001868 <do_spm>:
+/* ref: AVR_8bit_Instruction_Set pg 141
+ * void do_spm(uint8_t data)
+ */
+do_spm:
+	; Save SREG
+	lds		r18, SREG
+    1868:	20 91 5f 00 	lds	r18, 0x005F	; 0x80005f <__EEPROM_REGION_LENGTH__+0x7f005f>
+	CLI
+    186c:	f8 94       	cli
+
+0000186e <wait>:
+
+;	while(SPMCSR & (1<<SPMEN));		// wait
+;check for previous SPM complete
+wait:
+	LDS		r19, SPMCSR
+    186e:	30 91 57 00 	lds	r19, 0x0057	; 0x800057 <__EEPROM_REGION_LENGTH__+0x7f0057>
+	sbrc	r19, SPMEN
+    1872:	30 fd       	sbrc	r19, 0
+	rjmp	wait
+    1874:	fc cf       	rjmp	.-8      	; 0x186e <wait>
+
+	STS		SPMCSR, r24			; data
+    1876:	80 93 57 00 	sts	0x0057, r24	; 0x800057 <__EEPROM_REGION_LENGTH__+0x7f0057>
+	SPM
+    187a:	e8 95       	spm
+
+	STS		SREG, r18
+    187c:	20 93 5f 00 	sts	0x005F, r18	; 0x80005f <__EEPROM_REGION_LENGTH__+0x7f005f>
+	ret
+    1880:	08 95       	ret
+
+00001882 <waitBootTimeOut>:
+/*
+ * Check for timeout. Overflows every 256*2ms (~0.5s)
+ */
+bool waitBootTimeOut()
+{
+	if(TIFR & (1<<TOV1)) {
+    1882:	08 b6       	in	r0, 0x38	; 56
+    1884:	02 fe       	sbrs	r0, 2
+    1886:	0c c0       	rjmp	.+24     	; 0x18a0 <waitBootTimeOut+0x1e>
+		TIFR |= (1<<TOV1);				// clear OV flag
+    1888:	88 b7       	in	r24, 0x38	; 56
+    188a:	84 60       	ori	r24, 0x04	; 4
+    188c:	88 bf       	out	0x38, r24	; 56
+
+		--bootWaitTime;
+    188e:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <_edata>
+    1892:	81 50       	subi	r24, 0x01	; 1
+    1894:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+		if(bootWaitTime % 2 == 0) {
+//			mod_led_off();
+		} else {
+//			mod_led_on();
+		}
+		if(bootWaitTime == 0) {
+    1898:	81 11       	cpse	r24, r1
+    189a:	04 c0       	rjmp	.+8      	; 0x18a4 <waitBootTimeOut+0x22>
+			TCCR1 = 0;					// disable Timer1
+    189c:	10 be       	out	0x30, r1	; 48
+//			mod_led_off();
+			return false;
+    189e:	08 95       	ret
+		}
+	}
+
+	return true;
+    18a0:	81 e0       	ldi	r24, 0x01	; 1
+    18a2:	08 95       	ret
+    18a4:	81 e0       	ldi	r24, 0x01	; 1
+}
+    18a6:	08 95       	ret
+
+000018a8 <resetBootReset>:
+/*
+ * Reload Reset Vector in Page 0 to jump to Bootloader.
+ * Added: 1/29/2017 ndp
+ */
+void resetBootReset()
+{
+    18a8:	cf 93       	push	r28
+    18aa:	df 93       	push	r29
+	uint16_t tempWord;
+	uint16_t tempAddress = 0;
+
+	// Load RESET vector to the Bootloader into buffer.
+	tempWord = ((BOOT_PAGE_ADDRESS-1)>>1) | 0xC000;			// get address and add rjmp op code.
+	spm_filltemp(tempAddress, tempWord);
+    18ac:	6f ef       	ldi	r22, 0xFF	; 255
+    18ae:	7b ec       	ldi	r23, 0xCB	; 203
+    18b0:	80 e0       	ldi	r24, 0x00	; 0
+    18b2:	90 e0       	ldi	r25, 0x00	; 0
+    18b4:	ca df       	rcall	.-108    	; 0x184a <spm_filltemp>
+	tempAddress += 2;
+    18b6:	c2 e0       	ldi	r28, 0x02	; 2
+    18b8:	d0 e0       	ldi	r29, 0x00	; 0
+
+	// Read in FLASH Page 0
+	for(int i=2; i<PAGE_SIZE; i += 2) {
+		tempWord = pgm_read_word(i);
+    18ba:	fe 01       	movw	r30, r28
+    18bc:	65 91       	lpm	r22, Z+
+    18be:	74 91       	lpm	r23, Z
+		spm_filltemp(tempAddress, tempWord);
+    18c0:	ce 01       	movw	r24, r28
+    18c2:	c3 df       	rcall	.-122    	; 0x184a <spm_filltemp>
+		tempAddress += 2;
+    18c4:	22 96       	adiw	r28, 0x02	; 2
+	tempWord = ((BOOT_PAGE_ADDRESS-1)>>1) | 0xC000;			// get address and add rjmp op code.
+	spm_filltemp(tempAddress, tempWord);
+	tempAddress += 2;
+
+	// Read in FLASH Page 0
+	for(int i=2; i<PAGE_SIZE; i += 2) {
+    18c6:	c0 34       	cpi	r28, 0x40	; 64
+    18c8:	d1 05       	cpc	r29, r1
+    18ca:	b9 f7       	brne	.-18     	; 0x18ba <resetBootReset+0x12>
+		tempWord = pgm_read_word(i);
+		spm_filltemp(tempAddress, tempWord);
+		tempAddress += 2;
+	}
+
+	while(SPMCSR & (1<<SPMEN));		// wait
+    18cc:	07 b6       	in	r0, 0x37	; 55
+    18ce:	00 fc       	sbrc	r0, 0
+    18d0:	fd cf       	rjmp	.-6      	; 0x18cc <resetBootReset+0x24>
+
+	// Write Page 0 from temporary buffer
+	spm_pagewrite(0);
+    18d2:	80 e0       	ldi	r24, 0x00	; 0
+    18d4:	90 e0       	ldi	r25, 0x00	; 0
+    18d6:	c3 df       	rcall	.-122    	; 0x185e <spm_pagewrite>
+	do{} while ((SPMCSR & (1 << SELFPROGEN)) != 0); // Wait for the SPM operation to complete
+    18d8:	07 b6       	in	r0, 0x37	; 55
+    18da:	00 fc       	sbrc	r0, 0
+    18dc:	fd cf       	rjmp	.-6      	; 0x18d8 <resetBootReset+0x30>
+}
+    18de:	df 91       	pop	r29
+    18e0:	cf 91       	pop	r28
+    18e2:	08 95       	ret
+
+000018e4 <Erase_One_Page>:
+/***********************************************************************/
+/*  Absolute Unconditional Page Erase  Check bounds elsewhere    */
+void Erase_One_Page (uint16_t addr)
+{
+	// Erase page at the given address
+	spm_erase(addr);
+    18e4:	ad df       	rcall	.-166    	; 0x1840 <spm_erase>
+
+	do{} while ((SPMCSR & (1 << SELFPROGEN)) != 0);
+    18e6:	07 b6       	in	r0, 0x37	; 55
+    18e8:	00 fc       	sbrc	r0, 0
+    18ea:	fd cf       	rjmp	.-6      	; 0x18e6 <Erase_One_Page+0x2>
+	
+}
+    18ec:	08 95       	ret
+
+000018ee <UpdatePage>:
+/*
+ * modified: 3/16/2017 ndp	- Save Apps Reset Vector to use on Read Back.
+ *
+ ******************************************************************** */
+void UpdatePage (uint16_t pageAddress)
+{
+    18ee:	ef 92       	push	r14
+    18f0:	ff 92       	push	r15
+    18f2:	0f 93       	push	r16
+    18f4:	1f 93       	push	r17
+    18f6:	cf 93       	push	r28
+    18f8:	df 93       	push	r29
+	// Mask out in-page address bits.
+	pageAddress &= ~(PAGE_SIZE - 1);
+    18fa:	80 7c       	andi	r24, 0xC0	; 192
+    18fc:	7c 01       	movw	r14, r24
+	// Protect RESET vector if this is page 0.
+	if (pageAddress == INTVECT_PAGE_ADDRESS)
+    18fe:	89 2b       	or	r24, r25
+    1900:	a1 f4       	brne	.+40     	; 0x192a <UpdatePage+0x3c>
+	{
+		// Save App Reset Vector
+		appResetBytes[0] = pageBuffer[0];
+    1902:	e5 e6       	ldi	r30, 0x65	; 101
+    1904:	f0 e0       	ldi	r31, 0x00	; 0
+    1906:	a8 e6       	ldi	r26, 0x68	; 104
+    1908:	b0 e0       	ldi	r27, 0x00	; 0
+    190a:	8c 91       	ld	r24, X
+    190c:	80 83       	st	Z, r24
+		appResetBytes[1] = pageBuffer[1];
+    190e:	11 96       	adiw	r26, 0x01	; 1
+    1910:	8c 91       	ld	r24, X
+    1912:	11 97       	sbiw	r26, 0x01	; 1
+    1914:	81 83       	std	Z+1, r24	; 0x01
+		// Load existing RESET vector contents into buffer.
+		pageBuffer[0] = pgm_read_byte((void *)(INTVECT_PAGE_ADDRESS + 0));
+    1916:	e0 e0       	ldi	r30, 0x00	; 0
+    1918:	f0 e0       	ldi	r31, 0x00	; 0
+    191a:	e4 91       	lpm	r30, Z
+    191c:	ec 93       	st	X, r30
+		pageBuffer[1] = pgm_read_byte((void *)(INTVECT_PAGE_ADDRESS + 1));
+    191e:	e1 e0       	ldi	r30, 0x01	; 1
+    1920:	f0 e0       	ldi	r31, 0x00	; 0
+    1922:	e4 91       	lpm	r30, Z
+    1924:	11 96       	adiw	r26, 0x01	; 1
+    1926:	ec 93       	st	X, r30
+    1928:	04 c0       	rjmp	.+8      	; 0x1932 <UpdatePage+0x44>
+	}
+
+	// Ignore any attempt to update boot section.
+	if (pageAddress < BOOT_PAGE_ADDRESS)
+    192a:	e1 14       	cp	r14, r1
+    192c:	88 e1       	ldi	r24, 0x18	; 24
+    192e:	f8 06       	cpc	r15, r24
+    1930:	d8 f4       	brcc	.+54     	; 0x1968 <UpdatePage+0x7a>
+	{
+		Erase_One_Page (pageAddress);
+    1932:	c7 01       	movw	r24, r14
+    1934:	d7 df       	rcall	.-82     	; 0x18e4 <Erase_One_Page>
+
+		// Load temporary page buffer.
+		uint8_t *bufferPtr = pageBuffer;
+    1936:	c8 e6       	ldi	r28, 0x68	; 104
+    1938:	d0 e0       	ldi	r29, 0x00	; 0
+		uint16_t tempAddress = pageAddress;
+		for (uint8_t i = 0; i < PAGE_SIZE; i += 2)
+		{
+			uint16_t tempWord = ((bufferPtr[1] << 8) | bufferPtr[0]);
+			// Fill the temporary buffer with the given data
+			spm_filltemp(tempAddress, tempWord);
+    193a:	87 01       	movw	r16, r14
+    193c:	08 56       	subi	r16, 0x68	; 104
+    193e:	10 40       	sbci	r17, 0x00	; 0
+    1940:	69 81       	ldd	r22, Y+1	; 0x01
+    1942:	70 e0       	ldi	r23, 0x00	; 0
+    1944:	76 2f       	mov	r23, r22
+    1946:	66 27       	eor	r22, r22
+    1948:	88 81       	ld	r24, Y
+    194a:	68 2b       	or	r22, r24
+    194c:	ce 01       	movw	r24, r28
+    194e:	80 0f       	add	r24, r16
+    1950:	91 1f       	adc	r25, r17
+    1952:	7b df       	rcall	.-266    	; 0x184a <spm_filltemp>
+
+			tempAddress += 2;
+			bufferPtr += 2;
+    1954:	22 96       	adiw	r28, 0x02	; 2
+		Erase_One_Page (pageAddress);
+
+		// Load temporary page buffer.
+		uint8_t *bufferPtr = pageBuffer;
+		uint16_t tempAddress = pageAddress;
+		for (uint8_t i = 0; i < PAGE_SIZE; i += 2)
+    1956:	80 e0       	ldi	r24, 0x00	; 0
+    1958:	c8 3a       	cpi	r28, 0xA8	; 168
+    195a:	d8 07       	cpc	r29, r24
+    195c:	89 f7       	brne	.-30     	; 0x1940 <UpdatePage+0x52>
+
+			tempAddress += 2;
+			bufferPtr += 2;
+		}
+		// Write page from temporary buffer to the given location in flash memory
+		spm_pagewrite(pageAddress);
+    195e:	c7 01       	movw	r24, r14
+    1960:	7e df       	rcall	.-260    	; 0x185e <spm_pagewrite>
+
+		do{} while ((SPMCSR & (1 << SELFPROGEN)) != 0); // Wait for the SPM operation to complete
+    1962:	07 b6       	in	r0, 0x37	; 55
+    1964:	00 fc       	sbrc	r0, 0
+    1966:	fd cf       	rjmp	.-6      	; 0x1962 <UpdatePage+0x74>
+	}
+}
+    1968:	df 91       	pop	r29
+    196a:	cf 91       	pop	r28
+    196c:	1f 91       	pop	r17
+    196e:	0f 91       	pop	r16
+    1970:	ff 90       	pop	r15
+    1972:	ef 90       	pop	r14
+    1974:	08 95       	ret
+
+00001976 <commandProcess>:
+    }
+}
+
+
+void commandProcess(uint8_t cmd)
+{
+    1976:	cf 93       	push	r28
+    1978:	df 93       	push	r29
+	switch(commandMode)
+    197a:	90 91 63 00 	lds	r25, 0x0063	; 0x800063 <commandMode>
+    197e:	92 30       	cpi	r25, 0x02	; 2
+    1980:	09 f4       	brne	.+2      	; 0x1984 <commandProcess+0xe>
+    1982:	41 c0       	rjmp	.+130    	; 0x1a06 <commandProcess+0x90>
+    1984:	28 f4       	brcc	.+10     	; 0x1990 <commandProcess+0x1a>
+    1986:	99 23       	and	r25, r25
+    1988:	61 f0       	breq	.+24     	; 0x19a2 <commandProcess+0x2c>
+    198a:	91 30       	cpi	r25, 0x01	; 1
+    198c:	99 f1       	breq	.+102    	; 0x19f4 <commandProcess+0x7e>
+    198e:	b6 c0       	rjmp	.+364    	; 0x1afc <commandProcess+0x186>
+    1990:	94 30       	cpi	r25, 0x04	; 4
+    1992:	09 f4       	brne	.+2      	; 0x1996 <commandProcess+0x20>
+    1994:	47 c0       	rjmp	.+142    	; 0x1a24 <commandProcess+0xae>
+    1996:	08 f4       	brcc	.+2      	; 0x199a <commandProcess+0x24>
+    1998:	4d c0       	rjmp	.+154    	; 0x1a34 <commandProcess+0xbe>
+    199a:	95 30       	cpi	r25, 0x05	; 5
+    199c:	09 f4       	brne	.+2      	; 0x19a0 <commandProcess+0x2a>
+    199e:	61 c0       	rjmp	.+194    	; 0x1a62 <commandProcess+0xec>
+    19a0:	ad c0       	rjmp	.+346    	; 0x1afc <commandProcess+0x186>
+	{
+		case CM_IDLE:									// Waiting for NEW command sequence
+			switch(cmd)
+    19a2:	82 30       	cpi	r24, 0x02	; 2
+    19a4:	99 f0       	breq	.+38     	; 0x19cc <commandProcess+0x56>
+    19a6:	28 f4       	brcc	.+10     	; 0x19b2 <commandProcess+0x3c>
+    19a8:	88 23       	and	r24, r24
+    19aa:	41 f0       	breq	.+16     	; 0x19bc <commandProcess+0x46>
+    19ac:	81 30       	cpi	r24, 0x01	; 1
+    19ae:	51 f0       	breq	.+20     	; 0x19c4 <commandProcess+0x4e>
+    19b0:	a7 c0       	rjmp	.+334    	; 0x1b00 <commandProcess+0x18a>
+    19b2:	83 30       	cpi	r24, 0x03	; 3
+    19b4:	79 f0       	breq	.+30     	; 0x19d4 <commandProcess+0x5e>
+    19b6:	84 30       	cpi	r24, 0x04	; 4
+    19b8:	91 f0       	breq	.+36     	; 0x19de <commandProcess+0x68>
+    19ba:	a2 c0       	rjmp	.+324    	; 0x1b00 <commandProcess+0x18a>
+			{
+				case CMD_GET_STATUS:					// Request status
+					putTxFifo(systemStatus);
+    19bc:	80 91 a8 00 	lds	r24, 0x00A8	; 0x8000a8 <systemStatus>
+    19c0:	52 d1       	rcall	.+676    	; 0x1c66 <putTxFifo>
+					break;
+    19c2:	9e c0       	rjmp	.+316    	; 0x1b00 <commandProcess+0x18a>
+
+				case CMD_RECV_ADRS:
+					commandMode = CM_ADRS_HI;
+    19c4:	81 e0       	ldi	r24, 0x01	; 1
+    19c6:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+					break;
+    19ca:	9a c0       	rjmp	.+308    	; 0x1b00 <commandProcess+0x18a>
+
+				case CMD_RECV_DATA:
+					commandMode = CM_RECV_SIZE;			// Expecting one page block of data (0x40)
+    19cc:	84 e0       	ldi	r24, 0x04	; 4
+    19ce:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+					break;
+    19d2:	96 c0       	rjmp	.+300    	; 0x1b00 <commandProcess+0x18a>
+
+				case CMD_GET_DATA:
+					commandMode = CM_SEND_DATA;
+    19d4:	85 e0       	ldi	r24, 0x05	; 5
+    19d6:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+					clearTxFifo();
+    19da:	10 d1       	rcall	.+544    	; 0x1bfc <clearTxFifo>
+					break;
+    19dc:	91 c0       	rjmp	.+290    	; 0x1b00 <commandProcess+0x18a>
+
+				case CMD_GET_SIG:
+					commandMode = CM_IDLE;
+    19de:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+					clearTxFifo();
+    19e2:	0c d1       	rcall	.+536    	; 0x1bfc <clearTxFifo>
+					putTxFifo(SIGNATURE_BYTE_1);
+    19e4:	8e e1       	ldi	r24, 0x1E	; 30
+    19e6:	3f d1       	rcall	.+638    	; 0x1c66 <putTxFifo>
+					putTxFifo(SIGNATURE_BYTE_2);
+    19e8:	83 e9       	ldi	r24, 0x93	; 147
+    19ea:	3d d1       	rcall	.+634    	; 0x1c66 <putTxFifo>
+					putTxFifo(SIGNATURE_BYTE_3);
+    19ec:	8b e0       	ldi	r24, 0x0B	; 11
+    19ee:	3b d1       	rcall	.+630    	; 0x1c66 <putTxFifo>
+					clearRxFifo();
+    19f0:	00 d1       	rcall	.+512    	; 0x1bf2 <clearRxFifo>
+					break;
+    19f2:	86 c0       	rjmp	.+268    	; 0x1b00 <commandProcess+0x18a>
+					break;
+			}
+			break;
+
+		case CM_ADRS_HI:
+			workingAdrs = cmd;
+    19f4:	90 e0       	ldi	r25, 0x00	; 0
+    19f6:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    19fa:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+			commandMode = CM_ADRS_LO;
+    19fe:	82 e0       	ldi	r24, 0x02	; 2
+    1a00:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+			break;
+    1a04:	7d c0       	rjmp	.+250    	; 0x1b00 <commandProcess+0x18a>
+
+		case CM_ADRS_LO:
+			workingAdrs = (workingAdrs<<8) + cmd;
+			workingAdrs <<= 1;							// Convert to bytes address.
+    1a06:	20 e0       	ldi	r18, 0x00	; 0
+    1a08:	30 e0       	ldi	r19, 0x00	; 0
+    1a0a:	30 91 61 00 	lds	r19, 0x0061	; 0x800061 <workingAdrs>
+    1a0e:	28 0f       	add	r18, r24
+    1a10:	31 1d       	adc	r19, r1
+    1a12:	22 0f       	add	r18, r18
+    1a14:	33 1f       	adc	r19, r19
+    1a16:	30 93 62 00 	sts	0x0062, r19	; 0x800062 <workingAdrs+0x1>
+    1a1a:	20 93 61 00 	sts	0x0061, r18	; 0x800061 <workingAdrs>
+			commandMode = CM_IDLE;
+    1a1e:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+			break;
+    1a22:	6e c0       	rjmp	.+220    	; 0x1b00 <commandProcess+0x18a>
+
+		case CM_RECV_SIZE:
+			dataCount = cmd;
+    1a24:	80 93 67 00 	sts	0x0067, r24	; 0x800067 <dataCount>
+			dataIndex = 0;
+    1a28:	10 92 64 00 	sts	0x0064, r1	; 0x800064 <dataIndex>
+			commandMode = CM_RECV_DATA;
+    1a2c:	83 e0       	ldi	r24, 0x03	; 3
+    1a2e:	80 93 63 00 	sts	0x0063, r24	; 0x800063 <commandMode>
+			break;
+    1a32:	66 c0       	rjmp	.+204    	; 0x1b00 <commandProcess+0x18a>
+
+		case CM_RECV_DATA:								// Address already received and in workingAdrs.
+			pageBuffer[dataIndex] = cmd;
+    1a34:	90 91 64 00 	lds	r25, 0x0064	; 0x800064 <dataIndex>
+    1a38:	e9 2f       	mov	r30, r25
+    1a3a:	f0 e0       	ldi	r31, 0x00	; 0
+    1a3c:	e8 59       	subi	r30, 0x98	; 152
+    1a3e:	ff 4f       	sbci	r31, 0xFF	; 255
+    1a40:	80 83       	st	Z, r24
+			if(++dataIndex == dataCount) {
+    1a42:	81 e0       	ldi	r24, 0x01	; 1
+    1a44:	89 0f       	add	r24, r25
+    1a46:	80 93 64 00 	sts	0x0064, r24	; 0x800064 <dataIndex>
+    1a4a:	90 91 67 00 	lds	r25, 0x0067	; 0x800067 <dataCount>
+    1a4e:	89 13       	cpse	r24, r25
+    1a50:	57 c0       	rjmp	.+174    	; 0x1b00 <commandProcess+0x18a>
+				// Write dataBuffer to Flash
+				UpdatePage(workingAdrs);
+    1a52:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <workingAdrs>
+    1a56:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a5a:	49 df       	rcall	.-366    	; 0x18ee <UpdatePage>
+				commandMode = CM_IDLE;
+    1a5c:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+    1a60:	4f c0       	rjmp	.+158    	; 0x1b00 <commandProcess+0x18a>
+			}
+			break;
+
+		case CM_SEND_DATA:
+			dataCount = cmd;
+    1a62:	80 93 67 00 	sts	0x0067, r24	; 0x800067 <dataCount>
+			commandMode = CM_IDLE;
+    1a66:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+			if(workingAdrs == 0) {
+    1a6a:	20 91 61 00 	lds	r18, 0x0061	; 0x800061 <workingAdrs>
+    1a6e:	30 91 62 00 	lds	r19, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a72:	23 2b       	or	r18, r19
+    1a74:	19 f0       	breq	.+6      	; 0x1a7c <commandProcess+0x106>
+				for(int i=2; i<dataCount; i++) {
+					putTxFifo(pgm_read_byte(workingAdrs++));
+				}
+			} else {
+				// Send non-0 page.
+				for(int i=0; i<dataCount; i++) {
+    1a76:	81 11       	cpse	r24, r1
+    1a78:	2b c0       	rjmp	.+86     	; 0x1ad0 <commandProcess+0x15a>
+    1a7a:	42 c0       	rjmp	.+132    	; 0x1b00 <commandProcess+0x18a>
+		case CM_SEND_DATA:
+			dataCount = cmd;
+			commandMode = CM_IDLE;
+			if(workingAdrs == 0) {
+				// Restore App Reset bytes if needed. Page 0.
+				putTxFifo(appResetBytes[0]);
+    1a7c:	c5 e6       	ldi	r28, 0x65	; 101
+    1a7e:	d0 e0       	ldi	r29, 0x00	; 0
+    1a80:	88 81       	ld	r24, Y
+    1a82:	f1 d0       	rcall	.+482    	; 0x1c66 <putTxFifo>
+				putTxFifo(appResetBytes[1]);
+    1a84:	89 81       	ldd	r24, Y+1	; 0x01
+    1a86:	ef d0       	rcall	.+478    	; 0x1c66 <putTxFifo>
+				workingAdrs += 2;
+    1a88:	80 91 61 00 	lds	r24, 0x0061	; 0x800061 <workingAdrs>
+    1a8c:	90 91 62 00 	lds	r25, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1a90:	02 96       	adiw	r24, 0x02	; 2
+    1a92:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1a96:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+				for(int i=2; i<dataCount; i++) {
+    1a9a:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <dataCount>
+    1a9e:	90 e0       	ldi	r25, 0x00	; 0
+    1aa0:	03 97       	sbiw	r24, 0x03	; 3
+    1aa2:	74 f1       	brlt	.+92     	; 0x1b00 <commandProcess+0x18a>
+    1aa4:	c2 e0       	ldi	r28, 0x02	; 2
+    1aa6:	d0 e0       	ldi	r29, 0x00	; 0
+					putTxFifo(pgm_read_byte(workingAdrs++));
+    1aa8:	e0 91 61 00 	lds	r30, 0x0061	; 0x800061 <workingAdrs>
+    1aac:	f0 91 62 00 	lds	r31, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1ab0:	cf 01       	movw	r24, r30
+    1ab2:	01 96       	adiw	r24, 0x01	; 1
+    1ab4:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1ab8:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    1abc:	84 91       	lpm	r24, Z
+    1abe:	d3 d0       	rcall	.+422    	; 0x1c66 <putTxFifo>
+			if(workingAdrs == 0) {
+				// Restore App Reset bytes if needed. Page 0.
+				putTxFifo(appResetBytes[0]);
+				putTxFifo(appResetBytes[1]);
+				workingAdrs += 2;
+				for(int i=2; i<dataCount; i++) {
+    1ac0:	21 96       	adiw	r28, 0x01	; 1
+    1ac2:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <dataCount>
+    1ac6:	90 e0       	ldi	r25, 0x00	; 0
+    1ac8:	c8 17       	cp	r28, r24
+    1aca:	d9 07       	cpc	r29, r25
+    1acc:	6c f3       	brlt	.-38     	; 0x1aa8 <commandProcess+0x132>
+    1ace:	18 c0       	rjmp	.+48     	; 0x1b00 <commandProcess+0x18a>
+					putTxFifo(pgm_read_byte(workingAdrs++));
+				}
+			} else {
+				// Send non-0 page.
+				for(int i=0; i<dataCount; i++) {
+    1ad0:	c0 e0       	ldi	r28, 0x00	; 0
+    1ad2:	d0 e0       	ldi	r29, 0x00	; 0
+					putTxFifo(pgm_read_byte(workingAdrs++));
+    1ad4:	e0 91 61 00 	lds	r30, 0x0061	; 0x800061 <workingAdrs>
+    1ad8:	f0 91 62 00 	lds	r31, 0x0062	; 0x800062 <workingAdrs+0x1>
+    1adc:	cf 01       	movw	r24, r30
+    1ade:	01 96       	adiw	r24, 0x01	; 1
+    1ae0:	90 93 62 00 	sts	0x0062, r25	; 0x800062 <workingAdrs+0x1>
+    1ae4:	80 93 61 00 	sts	0x0061, r24	; 0x800061 <workingAdrs>
+    1ae8:	84 91       	lpm	r24, Z
+    1aea:	bd d0       	rcall	.+378    	; 0x1c66 <putTxFifo>
+				for(int i=2; i<dataCount; i++) {
+					putTxFifo(pgm_read_byte(workingAdrs++));
+				}
+			} else {
+				// Send non-0 page.
+				for(int i=0; i<dataCount; i++) {
+    1aec:	21 96       	adiw	r28, 0x01	; 1
+    1aee:	80 91 67 00 	lds	r24, 0x0067	; 0x800067 <dataCount>
+    1af2:	90 e0       	ldi	r25, 0x00	; 0
+    1af4:	c8 17       	cp	r28, r24
+    1af6:	d9 07       	cpc	r29, r25
+    1af8:	6c f3       	brlt	.-38     	; 0x1ad4 <commandProcess+0x15e>
+    1afa:	02 c0       	rjmp	.+4      	; 0x1b00 <commandProcess+0x18a>
+				}
+			}
+			break;			
+
+		default:
+			commandMode = CM_IDLE;
+    1afc:	10 92 63 00 	sts	0x0063, r1	; 0x800063 <commandMode>
+			break;
+	}
+}
+    1b00:	df 91       	pop	r29
+    1b02:	cf 91       	pop	r28
+    1b04:	08 95       	ret
+
+00001b06 <main>:
+ * Use Timer1 to wait N seconds for an I2C action to enter Bootloader.
+ * Assumes an 8 MHz clock
+ */
+void initBootTimer(uint8_t waitTime)
+{
+	TCCR1 = ((1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10));	// Use Tclk/16384 Prescaler (~2ms)
+    1b06:	8f e0       	ldi	r24, 0x0F	; 15
+    1b08:	80 bf       	out	0x30, r24	; 48
+	
+	bootWaitTime = waitTime << 1;			// N*2
+    1b0a:	82 e0       	ldi	r24, 0x02	; 2
+    1b0c:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+
+	// Introduce a 1 second delaw before starting bootloader
+	// back emf from servos sometimes dirtys up the SDA SCL lines,
+	// causing a false positive for twi data
+	initBootTimer(BOOTLOADER_START_DELAY);
+	while(waitBootTimeOut()){;
+    1b10:	b8 de       	rcall	.-656    	; 0x1882 <waitBootTimeOut>
+    1b12:	81 11       	cpse	r24, r1
+    1b14:	fd cf       	rjmp	.-6      	; 0x1b10 <main+0xa>
+	}
+
+	clearRxFifo();
+    1b16:	6d d0       	rcall	.+218    	; 0x1bf2 <clearRxFifo>
+	clearTxFifo();
+    1b18:	71 d0       	rcall	.+226    	; 0x1bfc <clearTxFifo>
+
+	mod_led_init();
+    1b1a:	2f d0       	rcall	.+94     	; 0x1b7a <mod_led_init>
+	mod_led_on();
+    1b1c:	30 d0       	rcall	.+96     	; 0x1b7e <mod_led_on>
+
+	systemStatus = 0;
+    1b1e:	10 92 a8 00 	sts	0x00A8, r1	; 0x8000a8 <systemStatus>
+
+	resetBootReset();				// overwrite App code reset vector
+    1b22:	c2 de       	rcall	.-636    	; 0x18a8 <resetBootReset>
+
+	uts_init(SLAVE_ADDRESS>>1);		// adj for standard use. (0xb0 -> 0x58)
+    1b24:	88 e5       	ldi	r24, 0x58	; 88
+    1b26:	43 d0       	rcall	.+134    	; 0x1bae <uts_init>
+ * Use Timer1 to wait N seconds for an I2C action to enter Bootloader.
+ * Assumes an 8 MHz clock
+ */
+void initBootTimer(uint8_t waitTime)
+{
+	TCCR1 = ((1<<CS13) | (1<<CS12) | (1<<CS11) | (1<<CS10));	// Use Tclk/16384 Prescaler (~2ms)
+    1b28:	8f e0       	ldi	r24, 0x0F	; 15
+    1b2a:	80 bf       	out	0x30, r24	; 48
+	
+	bootWaitTime = waitTime << 1;			// N*2
+    1b2c:	8c e0       	ldi	r24, 0x0C	; 12
+    1b2e:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <_edata>
+
+	uts_init(SLAVE_ADDRESS>>1);		// adj for standard use. (0xb0 -> 0x58)
+
+	initBootTimer(BOOT_DELAY);				// N * sec
+
+	putTxFifo(0x00);				// preload TxFifo to test for a Read.
+    1b32:	80 e0       	ldi	r24, 0x00	; 0
+    1b34:	98 d0       	rcall	.+304    	; 0x1c66 <putTxFifo>
+
+	while( waitBootTimeOut() ) {
+    1b36:	07 c0       	rjmp	.+14     	; 0x1b46 <main+0x40>
+		uts_poll();					// Service non-interrupt I2C handler.
+    1b38:	b6 d0       	rcall	.+364    	; 0x1ca6 <uts_poll>
+		if( !isRxEmpty() || isTxEmpty() ) {
+    1b3a:	65 d0       	rcall	.+202    	; 0x1c06 <isRxEmpty>
+    1b3c:	88 23       	and	r24, r24
+    1b3e:	69 f0       	breq	.+26     	; 0x1b5a <main+0x54>
+    1b40:	6a d0       	rcall	.+212    	; 0x1c16 <isTxEmpty>
+    1b42:	81 11       	cpse	r24, r1
+    1b44:	0a c0       	rjmp	.+20     	; 0x1b5a <main+0x54>
+
+	initBootTimer(BOOT_DELAY);				// N * sec
+
+	putTxFifo(0x00);				// preload TxFifo to test for a Read.
+
+	while( waitBootTimeOut() ) {
+    1b46:	9d de       	rcall	.-710    	; 0x1882 <waitBootTimeOut>
+    1b48:	81 11       	cpse	r24, r1
+    1b4a:	f6 cf       	rjmp	.-20     	; 0x1b38 <main+0x32>
+    1b4c:	10 c0       	rjmp	.+32     	; 0x1b6e <main+0x68>
+	{
+		// Check for App
+		if( pgm_read_byte(APP_START_ADRS) != 0xFF)
+		{
+			// DEBUG
+			mod_led_toggle(3);
+    1b4e:	83 e0       	ldi	r24, 0x03	; 3
+    1b50:	1a d0       	rcall	.+52     	; 0x1b86 <mod_led_toggle>
+
+			resetBootReset();				// overwrite App code reset vector just to make sure.
+    1b52:	aa de       	rcall	.-684    	; 0x18a8 <resetBootReset>
+
+			// App programmed
+			app = (void(*)())APP_START_ADRS;
+			app();	// Call app.
+    1b54:	ef e0       	ldi	r30, 0x0F	; 15
+    1b56:	f0 e0       	ldi	r31, 0x00	; 0
+    1b58:	09 95       	icall
+		}
+		// No app. Fall though and run Bootloader.
+	}
+
+	mod_led_off();
+    1b5a:	13 d0       	rcall	.+38     	; 0x1b82 <mod_led_off>
+
+	// DEBUG
+	mod_led_toggle(5);
+    1b5c:	85 e0       	ldi	r24, 0x05	; 5
+    1b5e:	13 d0       	rcall	.+38     	; 0x1b86 <mod_led_toggle>
+
+    while (1) 
+    {
+		uts_poll();					// Service non-interrupt I2C handler.
+    1b60:	a2 d0       	rcall	.+324    	; 0x1ca6 <uts_poll>
+
+		if(!isRxEmpty()) {
+    1b62:	51 d0       	rcall	.+162    	; 0x1c06 <isRxEmpty>
+    1b64:	81 11       	cpse	r24, r1
+    1b66:	fc cf       	rjmp	.-8      	; 0x1b60 <main+0x5a>
+			commandProcess(getRxFifo());
+    1b68:	5e d0       	rcall	.+188    	; 0x1c26 <getRxFifo>
+    1b6a:	05 df       	rcall	.-502    	; 0x1976 <commandProcess>
+    1b6c:	f9 cf       	rjmp	.-14     	; 0x1b60 <main+0x5a>
+	}
+	// Timed out. Jump to App if present, else Activate Bootloader.
+	if (runBootloader == false)
+	{
+		// Check for App
+		if( pgm_read_byte(APP_START_ADRS) != 0xFF)
+    1b6e:	ef e0       	ldi	r30, 0x0F	; 15
+    1b70:	f0 e0       	ldi	r31, 0x00	; 0
+    1b72:	e4 91       	lpm	r30, Z
+    1b74:	ef 3f       	cpi	r30, 0xFF	; 255
+    1b76:	59 f7       	brne	.-42     	; 0x1b4e <main+0x48>
+    1b78:	f0 cf       	rjmp	.-32     	; 0x1b5a <main+0x54>
+
+00001b7a <mod_led_init>:
+
+#include "mod_led.h"
+
+void mod_led_init()
+{
+	DEV_LED_DDR |= (1<<DEV_LED_OUT_PIN);			// set HIGH for output
+    1b7a:	b9 9a       	sbi	0x17, 1	; 23
+    1b7c:	08 95       	ret
+
+00001b7e <mod_led_on>:
+ * Turn LED OFF
+ */
+void mod_led_on()
+{
+	// Reverse logic for demo board use.
+	DEV_LED_PORT |= (1<<DEV_LED_OUT_PIN);			// set HIGH
+    1b7e:	c1 9a       	sbi	0x18, 1	; 24
+    1b80:	08 95       	ret
+
+00001b82 <mod_led_off>:
+ * Turn LED ON
+ */
+void mod_led_off()
+{
+	// Reverse logic for demo board use.
+	DEV_LED_PORT &= ~(1<<DEV_LED_OUT_PIN);			// set LOW
+    1b82:	c1 98       	cbi	0x18, 1	; 24
+    1b84:	08 95       	ret
+
+00001b86 <mod_led_toggle>:
+
+/*
+ * Toggle LED ON n times.
+ */
+void mod_led_toggle(uint8_t val)
+{
+    1b86:	cf 93       	push	r28
+    1b88:	df 93       	push	r29
+	for(uint8_t i=0; i<val; ++i)
+    1b8a:	88 23       	and	r24, r24
+    1b8c:	69 f0       	breq	.+26     	; 0x1ba8 <mod_led_toggle+0x22>
+    1b8e:	d8 2f       	mov	r29, r24
+    1b90:	c0 e0       	ldi	r28, 0x00	; 0
+	{
+		mod_led_on();
+    1b92:	f5 df       	rcall	.-22     	; 0x1b7e <mod_led_on>
+		asm("nop");
+    1b94:	00 00       	nop
+		asm("nop");
+    1b96:	00 00       	nop
+		asm("nop");
+    1b98:	00 00       	nop
+		mod_led_off();
+    1b9a:	f3 df       	rcall	.-26     	; 0x1b82 <mod_led_off>
+		asm("nop");
+    1b9c:	00 00       	nop
+		asm("nop");
+    1b9e:	00 00       	nop
+		asm("nop");
+    1ba0:	00 00       	nop
+/*
+ * Toggle LED ON n times.
+ */
+void mod_led_toggle(uint8_t val)
+{
+	for(uint8_t i=0; i<val; ++i)
+    1ba2:	cf 5f       	subi	r28, 0xFF	; 255
+    1ba4:	dc 13       	cpse	r29, r28
+    1ba6:	f5 cf       	rjmp	.-22     	; 0x1b92 <mod_led_toggle+0xc>
+		mod_led_off();
+		asm("nop");
+		asm("nop");
+		asm("nop");
+	}
+}
+    1ba8:	df 91       	pop	r29
+    1baa:	cf 91       	pop	r28
+    1bac:	08 95       	ret
+
+00001bae <uts_init>:
+/*
+ * adrs = Slave address (7bit)
+ */
+void uts_init(uint8_t adrs)
+{
+	utsState = UTS_WAIT_FOR_START;
+    1bae:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+	utsSlaveAdrs = adrs;
+    1bb2:	80 93 f3 00 	sts	0x00F3, r24	; 0x8000f3 <utsSlaveAdrs>
+	utsSend = true;						// default to SDA_R send data to Master
+    1bb6:	81 e0       	ldi	r24, 0x01	; 1
+    1bb8:	80 93 f1 00 	sts	0x00F1, r24	; 0x8000f1 <utsSend>
+	utsTxHead = utsTxTail = utsRxHead = utsRxTail = 0;
+    1bbc:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+    1bc0:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1bc4:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+    1bc8:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+
+	USI_DDR &= ~(1<<USI_SDA_PIN);		// SDA as input
+    1bcc:	b8 98       	cbi	0x17, 0	; 23
+	USI_PORT |= (1<<USI_SDA_PIN);		// enable pull-up
+    1bce:	c0 9a       	sbi	0x18, 0	; 24
+	USI_DDR |= (1<<USI_SCL_PIN);		// SCL as output
+    1bd0:	ba 9a       	sbi	0x17, 2	; 23
+	USI_PORT |= (1<<USI_SCL_PIN);
+    1bd2:	c2 9a       	sbi	0x18, 2	; 24
+
+	// Clear interrupt flags by writing 1 to them and clear counter to 0.
+	USISR = (1<<USISIF) |				// Clear START flag
+    1bd4:	80 ee       	ldi	r24, 0xE0	; 224
+    1bd6:	8e b9       	out	0x0e, r24	; 14
+			(1<<USIOIF) |				// Clear Counter OV flag
+			(1<<USIPF); 				// Clear STOP flag
+					                    // Clear USICNT<3:0> counter to 0.
+
+	// Enable START detect and configure USI
+	USICR = (1<<USISIE) |				// Enable START detect.
+    1bd8:	88 ea       	ldi	r24, 0xA8	; 168
+    1bda:	8d b9       	out	0x0d, r24	; 13
+    1bdc:	08 95       	ret
+
+00001bde <uts_sendACK>:
+ * For NAK, just don't do anything.
+ */
+void uts_sendACK()
+{
+	// Set ACK(0) bit
+	USIDR = 0;
+    1bde:	1f b8       	out	0x0f, r1	; 15
+	// set SDA as output
+	USI_DDR |= (1<<USI_SDA_PIN);
+    1be0:	b8 9a       	sbi	0x17, 0	; 23
+	// Set counter to output 1 bit.
+	USISR = 0x0E;
+    1be2:	8e e0       	ldi	r24, 0x0E	; 14
+    1be4:	8e b9       	out	0x0e, r24	; 14
+    1be6:	08 95       	ret
+
+00001be8 <uts_chkACK>:
+ * Set up to read in the ACK/NAK bit on the 9th clock.
+ */
+void uts_chkACK()
+{
+	// Set SDA as input
+	USI_DDR &= ~(1<<USI_SDA_PIN);
+    1be8:	b8 98       	cbi	0x17, 0	; 23
+	// Clear data register
+	USIDR = 0;
+    1bea:	1f b8       	out	0x0f, r1	; 15
+	// Set counter to input 1 bit.
+	USISR = 0x0E;
+    1bec:	8e e0       	ldi	r24, 0x0E	; 14
+    1bee:	8e b9       	out	0x0e, r24	; 14
+    1bf0:	08 95       	ret
+
+00001bf2 <clearRxFifo>:
+}
+
+void clearRxFifo()
+{
+	utsRxHead = utsRxTail = 0;
+    1bf2:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+    1bf6:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1bfa:	08 95       	ret
+
+00001bfc <clearTxFifo>:
+}
+
+void clearTxFifo()
+{
+	utsTxHead = utsTxTail = 0;
+    1bfc:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+    1c00:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+    1c04:	08 95       	ret
+
+00001c06 <isRxEmpty>:
+}
+
+bool isRxEmpty()
+{
+	return (utsRxHead == utsRxTail);
+    1c06:	81 e0       	ldi	r24, 0x01	; 1
+    1c08:	20 91 ee 00 	lds	r18, 0x00EE	; 0x8000ee <utsRxHead>
+    1c0c:	90 91 f0 00 	lds	r25, 0x00F0	; 0x8000f0 <utsRxTail>
+    1c10:	29 13       	cpse	r18, r25
+    1c12:	80 e0       	ldi	r24, 0x00	; 0
+}
+    1c14:	08 95       	ret
+
+00001c16 <isTxEmpty>:
+
+bool isTxEmpty()
+{
+	return (utsTxHead == utsTxTail);
+    1c16:	81 e0       	ldi	r24, 0x01	; 1
+    1c18:	20 91 a9 00 	lds	r18, 0x00A9	; 0x8000a9 <utsTxHead>
+    1c1c:	90 91 f2 00 	lds	r25, 0x00F2	; 0x8000f2 <utsTxTail>
+    1c20:	29 13       	cpse	r18, r25
+    1c22:	80 e0       	ldi	r24, 0x00	; 0
+}
+    1c24:	08 95       	ret
+
+00001c26 <getRxFifo>:
+// Simple FIFOs. NO overflow checks.
+uint8_t getRxFifo()
+{
+	uint8_t data;
+
+	data = utsRxFifo[utsRxTail];
+    1c26:	90 91 f0 00 	lds	r25, 0x00F0	; 0x8000f0 <utsRxTail>
+    1c2a:	e9 2f       	mov	r30, r25
+    1c2c:	f0 e0       	ldi	r31, 0x00	; 0
+    1c2e:	e6 55       	subi	r30, 0x56	; 86
+    1c30:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c32:	80 81       	ld	r24, Z
+	if(++utsRxTail >= UTS_FIFO_SIZE) utsRxTail = 0;
+    1c34:	9f 5f       	subi	r25, 0xFF	; 255
+    1c36:	94 34       	cpi	r25, 0x44	; 68
+    1c38:	18 f4       	brcc	.+6      	; 0x1c40 <getRxFifo+0x1a>
+    1c3a:	90 93 f0 00 	sts	0x00F0, r25	; 0x8000f0 <utsRxTail>
+    1c3e:	08 95       	ret
+    1c40:	10 92 f0 00 	sts	0x00F0, r1	; 0x8000f0 <utsRxTail>
+
+	return data;
+}
+    1c44:	08 95       	ret
+
+00001c46 <putRxFifo>:
+
+void putRxFifo(uint8_t data)
+{
+	utsRxFifo[utsRxHead] = data;
+    1c46:	90 91 ee 00 	lds	r25, 0x00EE	; 0x8000ee <utsRxHead>
+    1c4a:	e9 2f       	mov	r30, r25
+    1c4c:	f0 e0       	ldi	r31, 0x00	; 0
+    1c4e:	e6 55       	subi	r30, 0x56	; 86
+    1c50:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c52:	80 83       	st	Z, r24
+	if(++utsRxHead >= UTS_FIFO_SIZE) utsRxHead = 0;
+    1c54:	9f 5f       	subi	r25, 0xFF	; 255
+    1c56:	94 34       	cpi	r25, 0x44	; 68
+    1c58:	18 f4       	brcc	.+6      	; 0x1c60 <putRxFifo+0x1a>
+    1c5a:	90 93 ee 00 	sts	0x00EE, r25	; 0x8000ee <utsRxHead>
+    1c5e:	08 95       	ret
+    1c60:	10 92 ee 00 	sts	0x00EE, r1	; 0x8000ee <utsRxHead>
+    1c64:	08 95       	ret
+
+00001c66 <putTxFifo>:
+}
+
+void putTxFifo(uint8_t data)
+{
+	utsTxFifo[utsTxHead] = data;
+    1c66:	90 91 a9 00 	lds	r25, 0x00A9	; 0x8000a9 <utsTxHead>
+    1c6a:	e9 2f       	mov	r30, r25
+    1c6c:	f0 e0       	ldi	r31, 0x00	; 0
+    1c6e:	ec 50       	subi	r30, 0x0C	; 12
+    1c70:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c72:	80 83       	st	Z, r24
+	if(++utsTxHead >= UTS_FIFO_SIZE) utsTxHead = 0;
+    1c74:	9f 5f       	subi	r25, 0xFF	; 255
+    1c76:	94 34       	cpi	r25, 0x44	; 68
+    1c78:	18 f4       	brcc	.+6      	; 0x1c80 <putTxFifo+0x1a>
+    1c7a:	90 93 a9 00 	sts	0x00A9, r25	; 0x8000a9 <utsTxHead>
+    1c7e:	08 95       	ret
+    1c80:	10 92 a9 00 	sts	0x00A9, r1	; 0x8000a9 <utsTxHead>
+    1c84:	08 95       	ret
+
+00001c86 <getTxFifo>:
+
+uint8_t getTxFifo()
+{
+	uint8_t data;
+
+	data = utsTxFifo[utsTxTail];
+    1c86:	90 91 f2 00 	lds	r25, 0x00F2	; 0x8000f2 <utsTxTail>
+    1c8a:	e9 2f       	mov	r30, r25
+    1c8c:	f0 e0       	ldi	r31, 0x00	; 0
+    1c8e:	ec 50       	subi	r30, 0x0C	; 12
+    1c90:	ff 4f       	sbci	r31, 0xFF	; 255
+    1c92:	80 81       	ld	r24, Z
+	if(++utsTxTail >= UTS_FIFO_SIZE) utsTxTail = 0;
+    1c94:	9f 5f       	subi	r25, 0xFF	; 255
+    1c96:	94 34       	cpi	r25, 0x44	; 68
+    1c98:	18 f4       	brcc	.+6      	; 0x1ca0 <getTxFifo+0x1a>
+    1c9a:	90 93 f2 00 	sts	0x00F2, r25	; 0x8000f2 <utsTxTail>
+    1c9e:	08 95       	ret
+    1ca0:	10 92 f2 00 	sts	0x00F2, r1	; 0x8000f2 <utsTxTail>
+
+	return data;
+}
+    1ca4:	08 95       	ret
+
+00001ca6 <uts_poll>:
+  *   USICR		
+  *   USISR		
+  */
+void uts_poll()
+{
+	if(USISR & (1<<USISIF)) {
+    1ca6:	77 9b       	sbis	0x0e, 7	; 14
+    1ca8:	0b c0       	rjmp	.+22     	; 0x1cc0 <uts_poll+0x1a>
+		// SDA(0) while SCL(1) is START. Need to wait for SCL(0) before counting clocks.
+		while(USI_PIN & (1<<USI_SCL_PIN));			// Wait for SCL(0)
+    1caa:	b2 99       	sbic	0x16, 2	; 22
+    1cac:	fe cf       	rjmp	.-4      	; 0x1caa <uts_poll+0x4>
+		// Set SDA for input
+		USI_DDR &= ~(1<<USI_SDA_PIN);
+    1cae:	b8 98       	cbi	0x17, 0	; 23
+		// Enable Counter OV detect.
+		USICR |= (1<<USIOIE);
+    1cb0:	6e 9a       	sbi	0x0d, 6	; 13
+		// Set up counter to bring in address.
+		// Clear Counter OV and reset counter.
+		USISR = (1<<USIOIF);
+    1cb2:	80 e4       	ldi	r24, 0x40	; 64
+    1cb4:	8e b9       	out	0x0e, r24	; 14
+		USISR |= (1<<USISIF);		// clear START detect bit also to release SCL
+    1cb6:	77 9a       	sbi	0x0e, 7	; 14
+		utsState = UTS_WAIT_FOR_ADRS;
+    1cb8:	81 e0       	ldi	r24, 0x01	; 1
+    1cba:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+
+		USICR |= (1<<USIWM0);		// Enable OV clock stretch
+    1cbe:	6c 9a       	sbi	0x0d, 4	; 13
+	}
+
+	if(USISR & (1<<USIOIF)) {
+    1cc0:	76 9b       	sbis	0x0e, 6	; 14
+    1cc2:	5e c0       	rjmp	.+188    	; 0x1d80 <uts_poll+0xda>
+		// OV is cleared after case: service. SCL held off till then.
+
+		switch(utsState) {
+    1cc4:	80 91 ef 00 	lds	r24, 0x00EF	; 0x8000ef <utsState>
+    1cc8:	83 30       	cpi	r24, 0x03	; 3
+    1cca:	d1 f1       	breq	.+116    	; 0x1d40 <uts_poll+0x9a>
+    1ccc:	28 f4       	brcc	.+10     	; 0x1cd8 <uts_poll+0x32>
+    1cce:	81 30       	cpi	r24, 0x01	; 1
+    1cd0:	49 f0       	breq	.+18     	; 0x1ce4 <uts_poll+0x3e>
+    1cd2:	82 30       	cpi	r24, 0x02	; 2
+    1cd4:	d1 f0       	breq	.+52     	; 0x1d0a <uts_poll+0x64>
+    1cd6:	51 c0       	rjmp	.+162    	; 0x1d7a <uts_poll+0xd4>
+    1cd8:	85 30       	cpi	r24, 0x05	; 5
+    1cda:	59 f1       	breq	.+86     	; 0x1d32 <uts_poll+0x8c>
+    1cdc:	c8 f1       	brcs	.+114    	; 0x1d50 <uts_poll+0xaa>
+    1cde:	86 30       	cpi	r24, 0x06	; 6
+    1ce0:	e9 f1       	breq	.+122    	; 0x1d5c <uts_poll+0xb6>
+    1ce2:	4b c0       	rjmp	.+150    	; 0x1d7a <uts_poll+0xd4>
+			case UTS_WAIT_FOR_ADRS:
+				// get adrs, check it, and return ACK/NAK as needed.
+				if( (USIDR>>1) == utsSlaveAdrs) {
+    1ce4:	8f b1       	in	r24, 0x0f	; 15
+    1ce6:	86 95       	lsr	r24
+    1ce8:	90 91 f3 00 	lds	r25, 0x00F3	; 0x8000f3 <utsSlaveAdrs>
+    1cec:	89 13       	cpse	r24, r25
+    1cee:	09 c0       	rjmp	.+18     	; 0x1d02 <uts_poll+0x5c>
+					// Get Read/Write bit.
+					utsSend = ((USIDR & 0x01) == 1);
+    1cf0:	8f b1       	in	r24, 0x0f	; 15
+    1cf2:	81 70       	andi	r24, 0x01	; 1
+    1cf4:	80 93 f1 00 	sts	0x00F1, r24	; 0x8000f1 <utsSend>
+					// Send ACK
+					uts_sendACK();
+    1cf8:	72 df       	rcall	.-284    	; 0x1bde <uts_sendACK>
+					utsState = UTS_WAIT_FOR_ADRS_ACK;
+    1cfa:	82 e0       	ldi	r24, 0x02	; 2
+    1cfc:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+    1d00:	02 c0       	rjmp	.+4      	; 0x1d06 <uts_poll+0x60>
+				} else {
+					// For NAK, just don't respond. Line will stay high.
+					// Go back to waiting for START.
+					utsState = UTS_WAIT_FOR_START;
+    1d02:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+				}
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d06:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d08:	3b c0       	rjmp	.+118    	; 0x1d80 <uts_poll+0xda>
+
+			case UTS_WAIT_FOR_ADRS_ACK:
+				// Receiving Address.
+				// Check for Counter OV
+				// Set SDA as input to clear ACK.
+				USI_DDR &= ~(1<<USI_SDA_PIN);
+    1d0a:	b8 98       	cbi	0x17, 0	; 23
+				// Data follows sending Address ACK.
+				if(utsSend) {
+    1d0c:	80 91 f1 00 	lds	r24, 0x00F1	; 0x8000f1 <utsSend>
+    1d10:	88 23       	and	r24, r24
+    1d12:	41 f0       	breq	.+16     	; 0x1d24 <uts_poll+0x7e>
+					// Load up data register for output.
+					USIDR = getTxFifo();
+    1d14:	b8 df       	rcall	.-144    	; 0x1c86 <getTxFifo>
+    1d16:	8f b9       	out	0x0f, r24	; 15
+					// Set SDA for output
+					USI_DDR |= (1<<USI_SDA_PIN);
+    1d18:	b8 9a       	sbi	0x17, 0	; 23
+					// Reset counter.
+					USISR = 0;
+    1d1a:	1e b8       	out	0x0e, r1	; 14
+					utsState = UTS_WAIT_FOR_DATA_OUT;
+    1d1c:	84 e0       	ldi	r24, 0x04	; 4
+    1d1e:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+    1d22:	05 c0       	rjmp	.+10     	; 0x1d2e <uts_poll+0x88>
+				} else {
+					// Set SDA for input
+					USI_DDR &= ~(1<<USI_SDA_PIN);
+    1d24:	b8 98       	cbi	0x17, 0	; 23
+					// Reset counter.
+					USISR = 0;
+    1d26:	1e b8       	out	0x0e, r1	; 14
+					utsState = UTS_WAIT_FOR_DATA_IN;
+    1d28:	83 e0       	ldi	r24, 0x03	; 3
+    1d2a:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+				}
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d2e:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d30:	27 c0       	rjmp	.+78     	; 0x1d80 <uts_poll+0xda>
+
+			case UTS_WAIT_ON_ACK:
+				// Receiving Data.
+				// Set SDA as input to clear ACK.
+				USI_DDR &= ~(1<<USI_SDA_PIN);
+    1d32:	b8 98       	cbi	0x17, 0	; 23
+				// Reset counter.
+				USISR = 0;
+    1d34:	1e b8       	out	0x0e, r1	; 14
+				utsState = UTS_WAIT_FOR_DATA_IN;
+    1d36:	83 e0       	ldi	r24, 0x03	; 3
+    1d38:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+	
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d3c:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d3e:	20 c0       	rjmp	.+64     	; 0x1d80 <uts_poll+0xda>
+
+			case UTS_WAIT_FOR_DATA_IN:
+				// Check for Counter OV
+				// Get data..put into fifo.
+				putRxFifo(USIDR);
+    1d40:	8f b1       	in	r24, 0x0f	; 15
+    1d42:	81 df       	rcall	.-254    	; 0x1c46 <putRxFifo>
+				// Send ACK
+				uts_sendACK();
+    1d44:	4c df       	rcall	.-360    	; 0x1bde <uts_sendACK>
+				utsState = UTS_WAIT_ON_ACK;
+    1d46:	85 e0       	ldi	r24, 0x05	; 5
+    1d48:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d4c:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d4e:	18 c0       	rjmp	.+48     	; 0x1d80 <uts_poll+0xda>
+
+			case UTS_WAIT_FOR_DATA_OUT:
+				// Data sent.
+				uts_chkACK();
+    1d50:	4b df       	rcall	.-362    	; 0x1be8 <uts_chkACK>
+				// Look for ACK/NAK
+				utsState = UTS_WAIT_CHK_ACK;
+    1d52:	86 e0       	ldi	r24, 0x06	; 6
+    1d54:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d58:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d5a:	12 c0       	rjmp	.+36     	; 0x1d80 <uts_poll+0xda>
+
+			case UTS_WAIT_CHK_ACK:
+				// Sending Data
+				// Check for Counter OV
+				// Check Data reg for ACK(0) or NAK(1)
+				if((USIDR & 0x01) == 0) {
+    1d5c:	78 99       	sbic	0x0f, 0	; 15
+    1d5e:	08 c0       	rjmp	.+16     	; 0x1d70 <uts_poll+0xca>
+					// Load up data register for more output.
+					USIDR = getTxFifo();
+    1d60:	92 df       	rcall	.-220    	; 0x1c86 <getTxFifo>
+    1d62:	8f b9       	out	0x0f, r24	; 15
+					// Set SDA for output
+					USI_DDR |= (1<<USI_SDA_PIN);
+    1d64:	b8 9a       	sbi	0x17, 0	; 23
+					// Clear Counter OV and reset counter.
+					USISR = 0;
+    1d66:	1e b8       	out	0x0e, r1	; 14
+					utsState = UTS_WAIT_FOR_DATA_OUT;
+    1d68:	84 e0       	ldi	r24, 0x04	; 4
+    1d6a:	80 93 ef 00 	sts	0x00EF, r24	; 0x8000ef <utsState>
+    1d6e:	03 c0       	rjmp	.+6      	; 0x1d76 <uts_poll+0xd0>
+				} else {
+					// Master doesn't want any more.
+					// Go back to waiting for another message.
+					utsState = UTS_WAIT_FOR_START;
+    1d70:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+
+					USICR &= ~(1<<USIWM0);		// Disable OV clock stretch
+    1d74:	6c 98       	cbi	0x0d, 4	; 13
+				}
+				USISR |= (1<<USIOIF);				// clear OV detect bit
+    1d76:	76 9a       	sbi	0x0e, 6	; 14
+				break;
+    1d78:	03 c0       	rjmp	.+6      	; 0x1d80 <uts_poll+0xda>
+
+			default:
+				uts_init(utsSlaveAdrs);					// restart interface
+    1d7a:	80 91 f3 00 	lds	r24, 0x00F3	; 0x8000f3 <utsSlaveAdrs>
+    1d7e:	17 df       	rcall	.-466    	; 0x1bae <uts_init>
+				break;
+		}  // end switch()
+	} // end if(OV)
+
+	// Check for STOP.
+	if(USISR & (1<<USIPF)) {
+    1d80:	75 9b       	sbis	0x0e, 5	; 14
+    1d82:	07 c0       	rjmp	.+14     	; 0x1d92 <uts_poll+0xec>
+		USICR &= ~(1<<USIOIE);				// Disable Counter OV detect.
+    1d84:	6e 98       	cbi	0x0d, 6	; 13
+		// Clear interrupt flags by writing 1 to them and clear counter to 0.
+		USISR = (1<<USISIF) |				// Clear START flag
+    1d86:	80 ee       	ldi	r24, 0xE0	; 224
+    1d88:	8e b9       	out	0x0e, r24	; 14
+			(1<<USIOIF) |				// Clear Counter OV flag
+			(1<<USIPF); 				// Clear STOP flag
+		utsState = UTS_WAIT_FOR_START;
+    1d8a:	10 92 ef 00 	sts	0x00EF, r1	; 0x8000ef <utsState>
+		USICR &= ~(0<<USIWM0);		// Disable OV clock stretch
+    1d8e:	8d b1       	in	r24, 0x0d	; 13
+    1d90:	8d b9       	out	0x0d, r24	; 13
+    1d92:	08 95       	ret
+
+00001d94 <_exit>:
+    1d94:	f8 94       	cli
+
+00001d96 <__stop_program>:
+    1d96:	ff cf       	rjmp	.-2      	; 0x1d96 <__stop_program>
